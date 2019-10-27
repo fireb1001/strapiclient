@@ -264,62 +264,75 @@ const Sproviders: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  let inElectronMode = false;
   useEffect(() => {
     // Update the document title using the browser API
     const webview: WebviewTag | null = document.querySelector("webview");
-    const { remote } = window.require("electron");
-
-    console.log(remote.app.getVersion());
-
-    const { Menu, MenuItem } = remote;
-    const menu = new Menu();
-    menu.append(
-      new MenuItem({
-        label: "MenuItem1",
-        click() {
-          console.log("item 1 clicked");
-        }
-      })
-    );
-    menu.append(new MenuItem({ type: "separator" }));
-    menu.append(
-      new MenuItem({ label: "MenuItem2", type: "checkbox", checked: true })
-    );
-    window.addEventListener("contextmenu", event => {
-      event.preventDefault();
-      console.log(event);
-      menu.popup({ window: remote.getCurrentWindow() });
-    });
-
-    if (webview) {
-      webview.addEventListener("dom-ready", () => {
-        let currentURL = webview.getURL();
-        console.log("currentURL is : " + currentURL);
-        let titlePage = webview!.getTitle();
-        console.log("titlePage is : " + titlePage);
-        //webview.openDevTools();
-        // executing Javascript into the webview to get the full HTML
-        webview
-          .executeJavaScript(
-            `function gethtml () {
-    return new Promise((resolve, reject) => { resolve(document.documentElement.innerHTML); });
+    if (
+      window.process &&
+      window.process.versions &&
+      window.process.versions.electron
+    ) {
+      inElectronMode = true;
     }
-    gethtml();`
-          )
-          .then(html => {
-            // sending the HTML to the function extractLinks
-            console.log(html);
-            //extractLinks(html)
-          });
+    if (inElectronMode) {
+      const { remote, ipcRenderer } = window.require("electron");
+      ipcRenderer.on("OPT_CLICKED", (event, message) => {
+        console.log(message);
       });
+      console.log(remote.app.getVersion());
 
-      webview.addEventListener("contextmenu", event => {
+      const { Menu, MenuItem } = remote;
+      const menu = new Menu();
+      menu.append(
+        new MenuItem({
+          label: "MenuItem1",
+          click() {
+            console.log("item 1 clicked");
+          }
+        })
+      );
+      menu.append(new MenuItem({ type: "separator" }));
+      menu.append(
+        new MenuItem({ label: "MenuItem2", type: "checkbox", checked: true })
+      );
+      window.addEventListener("contextmenu", event => {
         event.preventDefault();
         console.log(event);
         menu.popup({ window: remote.getCurrentWindow() });
       });
+
+      if (webview) {
+        webview.addEventListener("dom-ready", () => {
+          let currentURL = webview.getURL();
+          console.log("currentURL is : " + currentURL);
+          let titlePage = webview!.getTitle();
+          console.log("titlePage is : " + titlePage);
+          //webview.openDevTools();
+          // executing Javascript into the webview to get the full HTML
+          webview
+            .executeJavaScript(
+              `function gethtml () {
+    return new Promise((resolve, reject) => { resolve(document.documentElement.innerHTML); });
+    }
+    gethtml();`
+            )
+            .then(html => {
+              // sending the HTML to the function extractLinks
+              // console.log(html);
+              //extractLinks(html)
+            });
+        });
+
+        webview.addEventListener("contextmenu", event => {
+          event.preventDefault();
+          console.log(event);
+          menu.popup({ window: remote.getCurrentWindow() });
+        });
+      }
     }
   });
+  const trueAsStr = "true" as any;
 
   return (
     <CtxtProvider>
@@ -330,8 +343,8 @@ const App: React.FC = () => {
             <div className="row">
               <webview
                 src="https://www.facebook.com"
-                style={{ display: "flex", width: "100%", minHeight: "600px" }}
-                nodeintegration={true}
+                style={{ display: "flex", width: "100%", minHeight: "200px" }}
+                nodeintegration={trueAsStr}
               />
             </div>
             <Sproviders />

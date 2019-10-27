@@ -21,11 +21,10 @@
     "bootstrap": "^4.3.1",
     "concurrently": "^5.0.0",
     "cross-env": "^6.0.3",
-    "electron": "^7.0.0",
-    "electron-builder": "^21.2.0",
     "electron-is-dev": "^1.1.0",
     "graphql": "^14.5.8",
     "moment": "^2.24.0",
+    "nodemon": "^1.19.4",
     "react": "^16.10.2",
     "react-bootstrap": "^1.0.0-beta.14",
     "react-dom": "^16.10.2",
@@ -35,6 +34,10 @@
     "typescript": "3.6.4",
     "wait-on": "^3.3.0"
   },
+  "devDependencies": {
+    "electron": "^7.0.0",
+    "electron-builder": "^21.2.0"
+  },
   "scripts": {
     "react-start": "react-scripts start",
     "react-build": "react-scripts build",
@@ -43,7 +46,7 @@
     "electron-build": "electron-builder",
     "release": "npm run react-build && electron-builder --publish=always",
     "build": "npm run react-build && npm run electron-build",
-    "serve": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && electron .\""
+    "serve": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && nodemon --exec \"\"electron .\"\""
   },
   "eslintConfig": {
     "extends": "react-app"

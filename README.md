@@ -1,5 +1,26 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Setups
+
+https://medium.com/@impaachu/how-to-build-a-react-based-electron-app-d0f27413f17f
+
+## MERN STACK
+
+https://www.youtube.com/watch?v=7CqJlxBYj-M
+https://github.com/beaucarnes/mern-exercise-tracker-mongodb/blob/master/src/components/exercises-list.component.js
+
+## adding apollo
+
+- https://www.apollographql.com/docs/react/get-started/
+
+  `npm install apollo-boost @apollo/react-hooks graphql`
+
+- https://www.youtube.com/watch?v=DKzprvzbS14&list=PLillGF-RfqbZrjw48EXLdM4dsOhURCLZx&index=3
+- https://www.apollographql.com/docs/react/get-started/
+- https://www.apollographql.com/docs/react/data/queries/
+
+---
+
 ## Available Scripts
 
 In the project directory, you can run:

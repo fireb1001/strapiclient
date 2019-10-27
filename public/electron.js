@@ -1,12 +1,17 @@
 const electron = require("electron");
+const ipcMain = electron.ipcMain;
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
+const BrowserView = electron.BrowserView;
 const Tray = electron.Tray;
 const path = require("path");
 const isDev = require("electron-is-dev");
+/**@type {electron.BrowserWindow} */
 let mainWindow;
 let imageWindow;
 let tray;
+/**@type {electron.BrowserView} */
+let view;
 
 global.sharedElectronObj = {
   params: {}
@@ -39,7 +44,8 @@ function createWindow() {
   const image = new BrowserWindow({
     width: 400,
     height: 400,
-    parent: mainWindow
+    parent: mainWindow,
+    show: false
   });
   image.loadURL("https://www.facebook.com/Ahmedtx22/");
   image.on("close", e => {
@@ -72,6 +78,15 @@ function createWindow() {
   });
 
   imageWindow = image;
+  view = new BrowserView();
+  view.setBounds({ x: 30, y: 30, width: 400, height: 500 });
+  view.webContents.loadURL("https://electronjs.org");
+  mainWindow.setBrowserView(view);
+
+  view.webContents.on("context-menu", function(event, params) {
+    menu.popup(view, params.x, params.y);
+    mainWindow.webContents.send("OPT_CLICKED", params);
+  });
 }
 app.on("ready", createWindow);
 app.on("window-all-closed", () => {
@@ -82,5 +97,18 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   if (mainWindow === null) {
     createWindow();
+  }
+});
+
+ipcMain.on("toggle-image", (event, arg) => {
+  imageWindow.show();
+});
+
+ipcMain.on("toggle-browserview", (event, arg) => {
+  let hasBrowserView = mainWindow.getBrowserView();
+  if (hasBrowserView) {
+    mainWindow.removeBrowserView(hasBrowserView);
+  } else {
+    mainWindow.setBrowserView(view);
   }
 });

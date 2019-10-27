@@ -68,6 +68,23 @@ export default function AddSprovider() {
       </Modal>
       {true && (
         <div className="row">
+          <div className="col-lg-12 m-3">
+            <a
+              onClick={e => {
+                console.log(e);
+                const ipcRenderer = window.require("electron").ipcRenderer;
+                //ipcRenderer.send("toggle-image");
+                ipcRenderer.send("toggle-browserview");
+              }}
+              className="btn btn-info btn-icon-split"
+            >
+              <span className="icon text-white-50">
+                <i className="fas fa-info-circle" />
+              </span>
+              <span className="text">Split Button Info</span>
+            </a>
+          </div>
+
           <div className="col-lg-6 mb-4">
             <div className="card bg-primary text-white shadow">
               <div className="card-body">
@@ -75,12 +92,6 @@ export default function AddSprovider() {
                 <div className="text-white-50 small">#4e73df</div>
               </div>
             </div>
-            <a href="#" className="btn btn-info btn-icon-split">
-              <span className="icon text-white-50">
-                <i className="fas fa-info-circle" />
-              </span>
-              <span className="text">Split Button Info</span>
-            </a>
           </div>
           <div className="col-lg-6 mb-4">
             <div className="card bg-success text-white shadow">
