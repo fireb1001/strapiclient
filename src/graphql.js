@@ -19,7 +19,10 @@ export const GET_SPROVIDERS = gql`
   }
 `;
 
-export const QUERY_INITS = { getSproviders: { where: {} } };
+export const QUERY_INITS = {
+  getSproviders: { where: {} },
+  getArticles: { where: {} }
+};
 
 export const UPDATE_MEDIAITEMS = gql`
   mutation($where: InputID, $data: editMediaitemsInput) {
@@ -30,6 +33,7 @@ export const UPDATE_MEDIAITEMS = gql`
     }
   }
 `;
+
 export const CREATE_SPROVIDER = gql`
   mutation($name: String!) {
     createSprovider(input: { data: { name: $name } }) {

@@ -28,7 +28,10 @@ export default function AddSprovider() {
     titleRef.current!.value = "";
     handleClose();
   };
-
+  let ipcRenderer: any;
+  if (window.Electron) {
+    ipcRenderer = window.require("electron").ipcRenderer;
+  }
   return (
     <>
       <Button variant="primary" onClick={handleShow}>
@@ -72,9 +75,9 @@ export default function AddSprovider() {
             <a
               onClick={e => {
                 console.log(e);
-                const ipcRenderer = window.require("electron").ipcRenderer;
+
                 //ipcRenderer.send("toggle-image");
-                ipcRenderer.send("toggle-browserview");
+                if (ipcRenderer) ipcRenderer.send("toggle-browserview");
               }}
               className="btn btn-info btn-icon-split"
             >

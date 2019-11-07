@@ -20,3 +20,26 @@
 .App-link {
   color: #09d3ac;
 }
+
+.h-bborder {
+  border-bottom: 1px solid #b0b9f1;
+}
+
+.d-link,
+.d-link:hover {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+.rtl-area {
+  direction: rtl;
+  text-align: right;
+}
+
+.demo-editor {
+  background-color: white;
+  padding: 1em;
+}
+.current-block {
+  background-color: azure;
+}

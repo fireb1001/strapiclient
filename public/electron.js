@@ -8,7 +8,10 @@ const path = require("path");
 const isDev = require("electron-is-dev");
 /**@type {electron.BrowserWindow} */
 let mainWindow;
+/**@type {electron.BrowserWindow} */
 let imageWindow;
+/**@type {electron.BrowserWindow} */
+let kwSearchWindow;
 let tray;
 /**@type {electron.BrowserView} */
 let view;
@@ -18,8 +21,6 @@ global.sharedElectronObj = {
 };
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 680,
     //frame: true,
     webPreferences: {
       webviewTag: true,
@@ -31,6 +32,9 @@ function createWindow() {
       ? "http://localhost:3000"
       : `file://${path.join(__dirname, "../build/index.html")}`
   );
+  mainWindow.maximize();
+
+  if (isDev) mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => (mainWindow = null));
   tray = new Tray(path.join(__dirname, "./logo192.png"));
@@ -41,6 +45,7 @@ function createWindow() {
       mainWindow.show();
     }
   });
+
   const image = new BrowserWindow({
     width: 400,
     height: 400,
@@ -52,21 +57,19 @@ function createWindow() {
     e.preventDefault();
     image.hide();
   });
-  const Menu = electron.Menu;
-  const MenuItem = electron.MenuItem;
-  const menu = new Menu();
-  menu.append(
-    new MenuItem({
-      label: "Opt",
-      click() {
-        console.log("Hello clicked params > ", global.sharedElectronObj.params);
-      }
-    })
-  );
-  menu.append(new MenuItem({ type: "separator" }));
-  menu.append(
-    new MenuItem({ label: "Electron", type: "checkbox", checked: true })
-  );
+  const kwSearch = new BrowserWindow({
+    width: 600,
+    height: 800,
+    parent: mainWindow,
+    show: false
+  });
+  kwSearch.on("close", e => {
+    e.preventDefault();
+    kwSearch.hide();
+  });
+
+  const menu = require("./contextmenu")(mainWindow);
+
   image.webContents.on("context-menu", function(event, params) {
     menu.popup(image, params.x, params.y);
     image.webContents.executeJavaScript(
@@ -77,15 +80,26 @@ function createWindow() {
     global.sharedElectronObj = { ...global.sharedElectronObj, params };
   });
 
+  kwSearch.webContents.on("context-menu", function(event, params) {
+    menu.popup(kwSearch, params.x, params.y);
+    kwSearch.webContents.executeJavaScript(
+      `console.log(${JSON.stringify(params)})`
+    );
+    console.log("params", params);
+    global.sharedElectronObj = { ...global.sharedElectronObj, params };
+  });
+
   imageWindow = image;
+  kwSearchWindow = kwSearch;
+
   view = new BrowserView();
   view.setBounds({ x: 30, y: 30, width: 400, height: 500 });
-  view.webContents.loadURL("https://electronjs.org");
+  view.webContents.loadURL("https://m.facebook.com");
   mainWindow.setBrowserView(view);
 
   view.webContents.on("context-menu", function(event, params) {
     menu.popup(view, params.x, params.y);
-    mainWindow.webContents.send("OPT_CLICKED", params);
+    mainWindow.webContents.send("CLOG", params);
   });
 }
 app.on("ready", createWindow);
@@ -111,4 +125,10 @@ ipcMain.on("toggle-browserview", (event, arg) => {
   } else {
     mainWindow.setBrowserView(view);
   }
+});
+
+ipcMain.on("open-kw-search", (event, data) => {
+  let keyword = data.keyword ? data.keyword.replace(" ", "+") : "";
+  kwSearchWindow.loadURL(`${data.url}${keyword}`);
+  kwSearchWindow.show();
 });

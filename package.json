@@ -9,7 +9,9 @@
   "homepage": ".",
   "dependencies": {
     "@apollo/react-hooks": "^3.1.3",
+    "@types/draft-js": "^0.10.37",
     "@types/jest": "24.0.19",
+    "@types/jquery": "^3.3.31",
     "@types/node": "12.11.1",
     "@types/react": "16.9.9",
     "@types/react-dom": "16.9.2",
@@ -21,13 +23,21 @@
     "bootstrap": "^4.3.1",
     "concurrently": "^5.0.0",
     "cross-env": "^6.0.3",
+    "draft-js": "^0.11.1",
+    "draftjs-to-markdown": "^0.5.1",
+    "draftjs-utils": "^0.9.4",
     "electron-is-dev": "^1.1.0",
     "graphql": "^14.5.8",
+    "jquery": "^3.4.1",
+    "markdown-draft-js": "^2.1.1",
+    "marked": "^0.7.0",
     "moment": "^2.24.0",
     "nodemon": "^1.19.4",
     "react": "^16.10.2",
     "react-bootstrap": "^1.0.0-beta.14",
+    "react-contenteditable": "^3.3.2",
     "react-dom": "^16.10.2",
+    "react-draft-wysiwyg": "^1.13.2",
     "react-markdown": "^4.2.2",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.2.0",
@@ -35,6 +45,7 @@
     "wait-on": "^3.3.0"
   },
   "devDependencies": {
+    "@types/marked": "^0.6.5",
     "electron": "^7.0.0",
     "electron-builder": "^21.2.0"
   },
@@ -44,7 +55,7 @@
     "react-test": "react-scripts test --env=jsdom",
     "react-eject": "react-scripts eject",
     "electron-build": "electron-builder",
-    "release": "npm run react-build && electron-builder --publish=always",
+    "release": "npm run react-build && npm run complie && electron-builder --publish=always",
     "build": "npm run react-build && npm run electron-build",
     "serve": "concurrently \"cross-env BROWSER=none npm run react-start\" \"wait-on http://localhost:3000 && nodemon --exec \"\"electron .\"\""
   },
