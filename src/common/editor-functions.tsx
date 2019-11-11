@@ -2,8 +2,10 @@ import {
   KeyBindingUtil,
   getDefaultKeyBinding,
   BlockMap,
-  ContentBlock
+  ContentBlock,
+  Entity
 } from "draft-js";
+import React from "react";
 const { hasCommandModifier } = KeyBindingUtil;
 
 export const KEY_COMMANDS = {
@@ -92,6 +94,28 @@ export function moveBlock(
   return blocksArr;
 }
 
+const MediaComponent = (props: any) => {
+  console.log(props);
+  const entity = Entity.get(props.block.getEntityAt(0));
+  const { src } = entity.getData();
+  console.log(src, entity.getType());
+  return (
+    <>
+      <div className="text-center">
+        <img src={src} className="draftblock-image" />
+      </div>
+    </>
+  );
+};
+
 export function myBlockRenderer(contentBlock: ContentBlock) {
   console.log(contentBlock.getType());
+
+  if (contentBlock.getType() === "atomic") {
+    if (contentBlock.getEntityAt(0))
+      return {
+        component: MediaComponent
+      };
+  }
+  return null;
 }

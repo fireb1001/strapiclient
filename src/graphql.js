@@ -21,7 +21,7 @@ export const GET_SPROVIDERS = gql`
 
 export const QUERY_INITS = {
   getSproviders: { where: {} },
-  getArticles: { where: {} }
+  createArticle: { title: " " }
 };
 
 export const UPDATE_MEDIAITEMS = gql`

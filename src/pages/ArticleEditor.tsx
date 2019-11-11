@@ -1,32 +1,16 @@
 import React, { useState, useMemo, useEffect, createRef } from "react";
-import { QUERY_INITS } from "../graphql";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { Article } from "../common/types";
 import { readableTime } from "../common/functions";
 import ContentEditable from "react-contenteditable";
 import { History } from "history";
-import { GET_ARTICLE, GET_ARTICLES, UPDATE_ARTICLE } from "../graphql/articles";
-import {
-  EditorState,
-  convertToRaw,
-  convertFromRaw,
-  ContentState,
-  RichUtils,
-  Entity,
-  Modifier
-} from "draft-js";
-// @ts-ignore
-import { Editor } from "react-draft-wysiwyg";
+import { GET_ARTICLE, UPDATE_ARTICLE } from "../graphql/articles";
+
 // @ts-ignore
 import draftToMarkdown from "draftjs-to-markdown";
-// @ts-ignore
-import { getSelectionEntity, getSelectionText } from "draftjs-utils";
-import {
-  myKeyBindingFn,
-  KEY_COMMANDS,
-  moveBlock
-} from "../common/editor-functions";
-//import { markdownToDraft } from 'markdown-draft-js';
+
+import { FormCheck } from "react-bootstrap";
+import { CustomEditor } from "../components/CustomEditor";
 
 interface RouterProps {
   match: any;
@@ -39,20 +23,13 @@ export default function ArticleEditor({ match, history }: Props) {
   const { loading, error, data } = useQuery(GET_ARTICLE, {
     variables: { id: match.params.id }
   });
-  const [updateArticle] = useMutation(UPDATE_ARTICLE, {
-    refetchQueries: [
-      { query: GET_ARTICLES, variables: QUERY_INITS.getArticles }
-    ]
-  });
+
+  const [updateArticle] = useMutation(UPDATE_ARTICLE);
   const [title, setTitle] = useState("");
+  const [articleData, setArticleData] = useState({ published: null });
   const [suggestions, setSuggets] = useState("");
 
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
-
-  const [editorRef, setEditorRef] = useState(createRef<any>());
-  const setEditorReference = (ref: any) => {
-    setEditorRef(ref);
-  };
+  const [rawEditorState, setRawEditorState] = useState({});
 
   const saveArticle = async () => {
     await updateArticle({
@@ -60,94 +37,28 @@ export default function ArticleEditor({ match, history }: Props) {
         id: match.params.id,
         data: {
           title: title,
-          rawcontent: JSON.stringify([
-            convertToRaw(editorState.getCurrentContent())
-          ]),
+          rawcontent: rawEditorState,
           content: draftToMarkdown(
-            convertToRaw(editorState.getCurrentContent())
-          )
+            rawEditorState,
+            {},
+            (entity: any, text: string) => {
+              if (text) console.log(entity, text);
+              if (entity.type === "IMAGE") {
+                return `![${entity.data.alt || ""}](${entity.data.src})*${entity
+                  .data.caption || ""}*`;
+              }
+              if (entity.type === "LINK") {
+                return ` [${text}](${entity.data.url})`;
+              }
+            },
+            {}
+          ),
+          published: articleData.published
         }
       }
     });
+
     history.goBack();
-  };
-
-  const handleKey = (command: any) => {
-    let selection = editorState.getSelection();
-
-    if (command === "bold") {
-      setEditorState(RichUtils.toggleInlineStyle(editorState, "BOLD"));
-      return "handled";
-    }
-
-    if (command === "code") {
-      setEditorState(RichUtils.toggleBlockType(editorState, "code"));
-      return "handled";
-    }
-
-    if (command === "header-one") {
-      setEditorState(RichUtils.toggleBlockType(editorState, "header-one"));
-      return "handled";
-    }
-
-    if (command === "header-two") {
-      setEditorState(RichUtils.toggleBlockType(editorState, "header-two"));
-      return "handled";
-    }
-
-    if (command === "ctrl+s") {
-      navigator.clipboard.readText().then(clipText => {
-        const contentState = editorState.getCurrentContent();
-        const contentStateWithEntity = contentState.createEntity(
-          "LINK",
-          "MUTABLE",
-          { url: clipText }
-        );
-
-        console.log("getSelectionEntity", getSelectionEntity(editorState));
-
-        if (getSelectionEntity(editorState)) {
-          console.log(Entity.get(getSelectionEntity(editorState)));
-        }
-
-        const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-        const newEditorState = EditorState.push(
-          editorState,
-          contentStateWithEntity,
-          "apply-entity"
-        );
-        setEditorState(
-          RichUtils.toggleLink(newEditorState, selection, entityKey)
-        );
-
-        console.log("selection", selection);
-        console.log("! selection isCollapsed", !selection.isCollapsed());
-      });
-      return "handled";
-    }
-
-    if (
-      command === KEY_COMMANDS.CTRL_PAGEUP ||
-      command === KEY_COMMANDS.CTRL_PAGEDOWN
-    ) {
-      const blockKey = editorState.getSelection().getAnchorKey();
-      let newBlocksArr = moveBlock(
-        editorState.getCurrentContent().getBlockMap(),
-        blockKey,
-        command === KEY_COMMANDS.CTRL_PAGEUP ? "UP" : "DOWN"
-      );
-      setEditorState(
-        EditorState.push(
-          editorState,
-          // @ts-ignore
-          ContentState.createFromBlockArray(newBlocksArr),
-          "change-block-data"
-        )
-      );
-      return "handled";
-    }
-    console.log(`${command} not-handled`);
-    return "not-handled";
   };
 
   const goBack = () => {
@@ -158,12 +69,11 @@ export default function ArticleEditor({ match, history }: Props) {
   useMemo(() => {
     if (data && data.article) {
       setTitle("" + data.article.title);
-      if (JSON.parse("" + data.article.rawcontent)) {
-        console.log(JSON.parse("" + data.article.rawcontent));
-        let rawContent = convertFromRaw(
-          JSON.parse("" + data.article.rawcontent)[0]
-        );
-        setEditorState(EditorState.createWithContent(rawContent));
+
+      if (data.article.rawcontent) {
+        setRawEditorState(data.article.rawcontent);
+        setArticleData({ ...articleData, published: data.article.published });
+        //setEditorState(EditorState.createWithContent(rawContent));
       }
     }
   }, [data]);
@@ -193,63 +103,31 @@ export default function ArticleEditor({ match, history }: Props) {
           <span className="post-time">{readableTime(article.createdAt)}</span>
         </div>
         <hr />
+        <FormCheck
+          type="switch"
+          label="Published"
+          onChange={(e: any) => {
+            setArticleData({ ...articleData, published: e.target.checked });
+          }}
+          id="custom-switch"
+          checked={
+            articleData.published != null && articleData.published == true
+          }
+        />
+        <hr />
 
-        {/* 
-          <ContentEditable
-            html={content}
-            onChange={e => setContent(e.target.value)}
-          />
-          */}
         <div className="row m-2">
           <div className="col-8 editor-container ">
-            <Editor
-              editorRef={setEditorReference}
-              editorState={editorState}
-              wrapperClassName="demo-wrapper"
-              editorClassName="demo-editor"
-              toolbar={{
-                image: {
-                  alt: { present: true, mandatory: true }
-                }
+            <CustomEditor
+              rawContent={data.article.rawcontent}
+              handleUpdateRaw={rawContent => {
+                setRawEditorState(rawContent);
               }}
-              onEditorStateChange={(val: any) => {
-                setEditorState(val);
-              }}
-              onChange={() => {
-                setSuggets(
-                  ("" + getSelectionText(editorState)).trim() + " يا وله"
-                );
-                if (getSelectionEntity(editorState)) {
-                  console.log(Entity.get(getSelectionEntity(editorState)));
-                }
-              }}
-              handleKeyCommand={handleKey}
-              keyBindingFn={myKeyBindingFn}
             />
           </div>
           <div className="col-4">
             <div className="m-2">
-              <span
-                onClick={async () => {
-                  let newState = Modifier.replaceText(
-                    editorState.getCurrentContent(),
-                    editorState.getSelection(),
-                    suggestions
-                  );
-
-                  console.log(newState.getPlainText());
-
-                  setEditorState(
-                    EditorState.push(editorState, newState, "apply-entity")
-                  );
-                  await setTimeout(() => {}, 100);
-                  // @ts-ignore
-
-                  editorRef.focus();
-                }}
-              >
-                {suggestions}
-              </span>
+              <span onClick={async () => {}}>{suggestions}</span>
             </div>
           </div>
         </div>
@@ -261,6 +139,6 @@ export default function ArticleEditor({ match, history }: Props) {
       </>
     );
   }
-
+  // important Don't Remove
   return <></>;
 }

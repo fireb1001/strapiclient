@@ -43,3 +43,11 @@
 .current-block {
   background-color: azure;
 }
+
+.draftblock-image {
+  max-width: 40%;
+}
+
+.scroll-to-top {
+  z-index: 10;
+}

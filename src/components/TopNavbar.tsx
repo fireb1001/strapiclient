@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useContext } from "react";
+import { AppCtxt } from "../ctx";
 
 interface NavbarProps {
   goBackPressed: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export function TopNavbar(props: NavbarProps) {
+  const context = useContext(AppCtxt);
+
   return (
     <>
       <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
@@ -37,6 +40,7 @@ export function TopNavbar(props: NavbarProps) {
           </div>
         </form>
         {/* Topbar Navbar */}
+        {JSON.stringify(context.site)}
         <ul className="navbar-nav ml-auto">
           {/* Nav Item - Search Dropdown (Visible Only XS) */}
           <li className="nav-item dropdown no-arrow d-sm-none">

@@ -1,20 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useContext } from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { NEILPATEL_URL, MAP_CONTEXT_ACTIONS } from "../AppConstants";
 import { CREATE_KEYWORD, DELETE_KEYWORD } from "../graphql/keywords";
 import { Site, keyword } from "../common/types";
 import { CustomEditor } from "../components/CustomEditor";
 import { GET_SITES, UPDATE_SITE } from "../graphql/sites";
+import { CREATE_ARTICLE } from "../graphql/articles";
+import { useHistory } from "react-router-dom";
+import { AppCtxt } from "../ctx";
 
 interface SingleSiteProps {
   site: Site;
 }
 
 const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
+  const { site: contextSite, setSite } = useContext(AppCtxt);
   let ipcRenderer: any;
   if (window.process && window.process.versions.electron) {
     ipcRenderer = window.require("electron").ipcRenderer;
   }
+
+  let history = useHistory();
+
+  const [createArticle] = useMutation(CREATE_ARTICLE);
 
   const [rawEditorState, setRawEditorState] = useState({});
 
@@ -44,7 +52,7 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
       await createKeyword({
         variables: {
           keyword: data.selectionText,
-          site: "5db15d27a787021bb86f7b48",
+          site: contextSite.id,
           volume: volume && parseInt(volume) ? parseInt(volume) : 0
         }
       });
@@ -86,6 +94,14 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
             >
               {"💾 Save"}
             </button>
+            <button
+              className="btn btn-primary"
+              onClick={e => {
+                setSite(site);
+              }}
+            >
+              {"🌐 Set Current"}
+            </button>
           </div>
         </div>
         <div className="rtl-area p-3 col-6">
@@ -110,6 +126,16 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                     onClick={async () =>
                       await deleteKeyword({ variables: { id: keyword.id } })
                     }
+                  />{" "}
+                  <i
+                    className="text-primary fas fa-plus"
+                    onClick={async () => {
+                      let newArticle = await createArticle({
+                        variables: { title: keyword.keyword }
+                      });
+                      let article_id = newArticle.data.createArticle.article.id;
+                      history.push(`/article_editor/${article_id}`);
+                    }}
                   />
                 </div>
               );
@@ -122,10 +148,20 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
 
 export default function SitesDashboard() {
   const { loading, error, data, refetch } = useQuery(GET_SITES);
+  const { site, setSite } = useContext(AppCtxt);
 
   useEffect(() => {
     refetch();
   });
+
+  useMemo(async () => {
+    /*
+    if (data && data.sites) {
+      console.log(data.sites[0]);
+      setSite(data.sites[0]);
+    }
+    */
+  }, [data]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;

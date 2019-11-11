@@ -5,6 +5,7 @@ export type Article = {
   rawcontent: string;
   createdAt: Date;
   updatedAt: Date;
+  published: boolean;
 };
 
 export type keyword = {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Editor,
   EditorState,
@@ -10,7 +10,8 @@ import {
   SelectionState,
   ContentBlock,
   genKey,
-  ContentState
+  ContentState,
+  AtomicBlockUtils
 } from "draft-js";
 import {
   myKeyBindingFn,
@@ -22,7 +23,7 @@ import {
 import { getSelectionEntity } from "draftjs-utils";
 import linkSvg from "../common/svg/link.svg";
 import monkeySee from "../common/svg/monkeySee.svg";
-import { Popover, OverlayTrigger } from "react-bootstrap";
+import { Popover, OverlayTrigger, Modal, Button } from "react-bootstrap";
 
 interface CustomEditorProps {
   rawContent?: any;
@@ -36,7 +37,7 @@ enum EDIT_MODES {
 
 const Link = (props: any) => {
   const { url } = props.contentState.getEntity(props.entityKey).getData();
-  const [popOver, setPopOver] = useState(false);
+  const [popOver, setPopOver] = React.useState(false);
 
   const togglePopOver = () => {
     setPopOver(!popOver);
@@ -82,6 +83,87 @@ const Link = (props: any) => {
   );
 };
 
+const InsertImage = (props: any) => {
+  let [imageData, setImageData] = React.useState({
+    src: "",
+    alt: "",
+    caption: ""
+  });
+  return (
+    <>
+      <label>
+        URL:
+        <input
+          type="text"
+          value={imageData.src}
+          onChange={e => {
+            setImageData({ ...imageData, src: e.target.value });
+            props.onValue(imageData);
+          }}
+        />
+      </label>
+      <label>
+        ALT:
+        <input
+          type="text"
+          value={imageData.alt}
+          onChange={e => {
+            setImageData({ ...imageData, alt: e.target.value });
+            props.onValue(imageData);
+          }}
+        />
+      </label>
+      <label>
+        Caption:
+        <input
+          type="text"
+          value={imageData.caption}
+          onChange={e => {
+            setImageData({ ...imageData, caption: e.target.value });
+            props.onValue(imageData);
+          }}
+        />
+      </label>
+    </>
+  );
+};
+
+interface EditorModalProps {
+  show: boolean;
+  onToggle: (flag: boolean) => void;
+  onValue: (value: any) => void;
+}
+
+function EditorModal(props: EditorModalProps) {
+  return (
+    <Modal show={props.show} onHide={() => props.onToggle(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Modal heading</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <InsertImage
+          onValue={(value: any) => {
+            props.onValue(value);
+          }}
+        />
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => props.onToggle(false)}>
+          Close
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => {
+            props.onToggle(false);
+          }}
+        >
+          Save Changes
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
 export function CustomEditor(props: CustomEditorProps) {
   const decorator = new CompositeDecorator([
     {
@@ -94,6 +176,7 @@ export function CustomEditor(props: CustomEditorProps) {
 
   if (props.rawContent) {
     try {
+      console.log(props.rawContent);
       initState = EditorState.createWithContent(
         convertFromRaw(props.rawContent),
         decorator
@@ -106,6 +189,12 @@ export function CustomEditor(props: CustomEditorProps) {
   }
 
   const [editorState, setEditorState] = React.useState(initState);
+  const [showEditorModal, setShowEditorModal] = React.useState(false);
+  const [imageData, setImageData] = React.useState({
+    src: "",
+    alt: "",
+    caption: ""
+  });
 
   const [editMode, setEditMode] = React.useState<EDIT_MODES>(
     EDIT_MODES.DEFAULT
@@ -198,6 +287,23 @@ export function CustomEditor(props: CustomEditorProps) {
           "insert-fragment"
         )
       );
+      return "handled";
+    }
+
+    if (command === "reset-style") {
+      const newContentState = RichUtils.tryToRemoveBlockStyle(editorState);
+
+      if (newContentState) {
+        // @ts-ignore
+        let newEditorState = EditorState.push(
+          editorState,
+          newContentState,
+          "change-block-type"
+        );
+
+        setEditorState(newEditorState);
+      }
+      return "handled";
     }
 
     if (command === KEY_COMMANDS.CTRL_N) {
@@ -340,15 +446,73 @@ export function CustomEditor(props: CustomEditorProps) {
 
   return (
     <>
+      <EditorModal
+        show={showEditorModal}
+        onValue={value => setImageData(value)}
+        onToggle={(flag: boolean) => {
+          if (imageData && imageData.src) {
+            // adding image block
+            const contentState = editorState.getCurrentContent();
+            const contentStateWithEntity = contentState.createEntity(
+              "IMAGE",
+              "IMMUTABLE",
+              {
+                src: imageData.src,
+                alt: imageData.alt ? imageData.alt : "",
+                caption: imageData.caption ? imageData.caption : ""
+              }
+            );
+            const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+            const newEditorState = EditorState.set(editorState, {
+              currentContent: contentStateWithEntity
+            });
+            setEditorState(
+              // its important to use whitespace
+              AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, " ")
+            );
+          }
+          setShowEditorModal(flag);
+        }}
+      />
       <Editor
         editorState={editorState}
         onChange={onChange}
         handleKeyCommand={handleKey}
-        keyBindingFn={myKeyBindingFn}
+        keyBindingFn={e => {
+          // check if binding need editor state
+          const blockKey = editorState.getSelection().getAnchorKey();
+
+          const currentBlock = editorState
+            .getCurrentContent()
+            .getBlockForKey(blockKey);
+          if (
+            e.keyCode === 8 &&
+            currentBlock.getType() !== "unstyled" &&
+            currentBlock.getText().length === 0
+          ) {
+            return "reset-style";
+          }
+          return myKeyBindingFn(e);
+        }}
         blockRendererFn={myBlockRenderer}
         blockStyleFn={myBlockStyleFn}
       />
       {editMode == EDIT_MODES.BLOCK && <span> -- BLOCK MODE --</span>}
+      <img
+        src={linkSvg}
+        alt=""
+        style={{ width: "3em" }}
+        onClick={() => {
+          setShowEditorModal(true);
+        }}
+      />
+      <span
+        onClick={_ =>
+          console.log(convertToRaw(editorState.getCurrentContent()))
+        }
+      >
+        STATE
+      </span>
     </>
   );
 }
