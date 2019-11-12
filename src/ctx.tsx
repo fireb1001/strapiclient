@@ -10,12 +10,12 @@ class ChangeSite implements Action {
 
 class ToggleShowArchived implements Action {
   type: "TOGGLE_SHOW_ARCHIVED" = "TOGGLE_SHOW_ARCHIVED";
-  flag?: boolean;
+  flag!: boolean;
 }
 
 const initialState = {
   show_archived: false,
-  toggleShowState: {},
+  toggleShowState: (payload: any) => {},
   site: {} as Site,
   setSite: (site: any) => {}
 };
@@ -54,7 +54,9 @@ function CtxtProvider(props: any) {
   const [state, dispatch] = useReducer(appReducer, { ...initialState });
 
   function toggleShowState(flag: boolean) {
-    dispatch({ type: "TOGGLE_SHOW_ARCHIVED", payload: flag });
+    let toggAction = new ToggleShowArchived();
+    toggAction.flag = flag;
+    dispatch(toggAction);
   }
 
   function setSite(site: Site) {
@@ -67,6 +69,7 @@ function CtxtProvider(props: any) {
     if (localStorage.getItem("CURRENT_SITE")) {
       setSite(JSON.parse("" + localStorage.getItem("CURRENT_SITE")));
     }
+    console.log("state.show_archived", state.show_archived);
   }, []);
 
   return (

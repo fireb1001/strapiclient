@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useMemo } from "react";
 import { AppCtxt } from "../ctx";
 import { QUERY_INITS } from "../graphql";
 import { useQuery, useMutation } from "@apollo/react-hooks";
@@ -87,7 +87,7 @@ const SingleArticle: React.FC<SingleArticleProps> = ({
 };
 
 export default function Articles() {
-  const { site } = useContext(AppCtxt);
+  const { site, show_archived, toggleShowState } = useContext(AppCtxt);
   const [showArchived, setShowArchived] = React.useState(false);
 
   let history = useHistory();
@@ -103,6 +103,7 @@ export default function Articles() {
   });
 
   useEffect(() => {
+    setShowArchived(show_archived);
     refetch();
   });
 
@@ -116,6 +117,7 @@ export default function Articles() {
         label="Show Only Archived"
         onChange={(e: any) => {
           setShowArchived(e.target.checked);
+          toggleShowState(e.target.checked);
         }}
         id="custom-switch"
         checked={showArchived}
