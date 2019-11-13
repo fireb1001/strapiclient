@@ -11,7 +11,8 @@ import {
   ContentBlock,
   genKey,
   ContentState,
-  AtomicBlockUtils
+  AtomicBlockUtils,
+  Modifier
 } from "draft-js";
 import {
   myKeyBindingFn,
@@ -24,6 +25,7 @@ import { getSelectionEntity } from "draftjs-utils";
 import linkSvg from "../common/svg/link.svg";
 import monkeySee from "../common/svg/monkeySee.svg";
 import { Popover, OverlayTrigger, Modal, Button } from "react-bootstrap";
+import { AppCtxt } from "../ctx";
 
 interface CustomEditorProps {
   rawContent?: any;
@@ -165,6 +167,14 @@ function EditorModal(props: EditorModalProps) {
 }
 
 export function CustomEditor(props: CustomEditorProps) {
+  const { suggest_kw } = React.useContext(AppCtxt);
+
+  const [editorRef, setEditorRef] = React.useState(React.createRef<any>());
+
+  const setDomEditorRef = (ref: any) => {
+    setEditorRef(ref);
+  };
+
   const decorator = new CompositeDecorator([
     {
       strategy: findLinkEntities,
@@ -176,7 +186,6 @@ export function CustomEditor(props: CustomEditorProps) {
 
   if (props.rawContent) {
     try {
-      console.log(props.rawContent);
       initState = EditorState.createWithContent(
         convertFromRaw(props.rawContent),
         decorator
@@ -204,6 +213,30 @@ export function CustomEditor(props: CustomEditorProps) {
     props.handleUpdateRaw(convertToRaw(editorState.getCurrentContent()));
     setEditorState(editorState);
   };
+
+  const replaceText = async (newString: string) => {
+    let newState = Modifier.replaceText(
+      editorState.getCurrentContent(),
+      editorState.getSelection(),
+      newString
+    );
+
+    setEditorState(
+      EditorState.push(editorState, newState, "insert-characters")
+    );
+    await setTimeout(() => {}, 100);
+
+    // @ts-ignore
+    if (editorRef && editorRef.refs) editorRef.focus();
+  };
+
+  // and now it's only working when value change ! so string not changed
+  React.useEffect(() => {
+    console.log("suggest_kw become", suggest_kw);
+    if (suggest_kw) {
+      replaceText(suggest_kw.keyword);
+    }
+  }, [suggest_kw]);
 
   function findLinkEntities(
     contentBlock: any,
@@ -476,6 +509,7 @@ export function CustomEditor(props: CustomEditorProps) {
       />
       <Editor
         editorState={editorState}
+        ref={setDomEditorRef}
         onChange={onChange}
         handleKeyCommand={handleKey}
         keyBindingFn={e => {

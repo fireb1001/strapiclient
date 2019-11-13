@@ -11,6 +11,8 @@ import draftToMarkdown from "draftjs-to-markdown";
 
 import { FormCheck } from "react-bootstrap";
 import { CustomEditor } from "../components/CustomEditor";
+import SuggestKeywords from "../components/SuggestKeywords";
+import { AppCtxt } from "../ctx";
 
 interface RouterProps {
   match: any;
@@ -24,11 +26,12 @@ export default function ArticleEditor({ match, history }: Props) {
     variables: { id: match.params.id }
   });
 
+  const { suggestFn } = React.useContext(AppCtxt);
+
   const [updateArticle] = useMutation(UPDATE_ARTICLE);
   const [title, setTitle] = useState("");
   const [articleData, setArticleData] = useState({ published: null });
   const [suggestions, setSuggets] = useState("");
-
   const [rawEditorState, setRawEditorState] = useState({});
 
   const saveArticle = async () => {
@@ -127,6 +130,13 @@ export default function ArticleEditor({ match, history }: Props) {
           </div>
           <div className="col-4">
             <div className="m-2">
+              <SuggestKeywords
+                suggestions={["يا كاكا", "يا ماما"]}
+                kwContext=""
+                handleSelect={(kw: string) => {
+                  suggestFn({ keyword: kw });
+                }}
+              />
               <span onClick={async () => {}}>{suggestions}</span>
             </div>
           </div>

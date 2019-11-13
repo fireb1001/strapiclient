@@ -13,11 +13,18 @@ class ToggleShowArchived implements Action {
   flag!: boolean;
 }
 
+class SuggestAction implements Action {
+  type: "SUGGEST_ACTION" = "SUGGEST_ACTION";
+  payload!: any;
+}
+
 const initialState = {
   show_archived: false,
   toggleShowState: (payload: any) => {},
   site: {} as Site,
-  setSite: (site: any) => {}
+  setSite: (site: any) => {},
+  suggest_kw: { keyword: "" },
+  suggestFn: (payload: any) => {}
 };
 
 const AppCtxt = createContext({ ...initialState });
@@ -28,6 +35,11 @@ function appReducer(state: any, action: any) {
       return {
         ...state,
         show_archived: action.flag
+      };
+    case "SUGGEST_ACTION":
+      return {
+        ...state,
+        suggest_kw: action.payload
       };
     case "CHANGE_SITE":
       let changeSiteAction = action as ChangeSite;
@@ -65,6 +77,12 @@ function CtxtProvider(props: any) {
     dispatch(changeSiteAction);
   }
 
+  function suggestFn(payload: any) {
+    let suggestAction = new SuggestAction();
+    suggestAction.payload = payload;
+    dispatch(suggestAction);
+  }
+
   useMemo(() => {
     if (localStorage.getItem("CURRENT_SITE")) {
       setSite(JSON.parse("" + localStorage.getItem("CURRENT_SITE")));
@@ -78,7 +96,9 @@ function CtxtProvider(props: any) {
         show_archived: state.show_archived,
         toggleShowState,
         site: state.site as Site,
-        setSite
+        setSite,
+        suggest_kw: state.suggest_kw,
+        suggestFn
       }}
       {...props}
     />
