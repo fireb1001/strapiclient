@@ -6,14 +6,14 @@ import { ApolloProvider } from "@apollo/react-hooks";
 import App from "./App";
 import { onError } from "apollo-link-error";
 import { ApolloLink } from "apollo-link";
+import gql from "graphql-tag";
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors)
     graphQLErrors.map(({ message, locations, path }) => {
-      console.log(`[GraphQL error]: Message: ${message}, Path: ${path}`)
-      console.error( locations )
-      }
-    );
+      console.log(`[GraphQL error]: Message: ${message}, Path: ${path}`);
+      console.error(locations);
+    });
 
   if (networkError) console.log(`[Network ERORR]: ${networkError}`);
 });
@@ -29,8 +29,26 @@ const client = new ApolloClient({
   cache: new InMemoryCache()
 });
 
-export default (
+function customeClientQuery(query: any, variables: any): Promise<any> {
+  return new Promise<number>((resolve, reject) => {
+    client
+      .query({
+        query: query,
+        variables: variables
+      })
+      .then(data => resolve(data.data))
+      .catch(error => reject(error));
+  });
+}
+
+const callClient = async (query: any, variables: any) => {
+  return await customeClientQuery(query, variables);
+};
+
+const MyApolloProvider = () => (
   <ApolloProvider client={client}>
     <App />
   </ApolloProvider>
 );
+
+export { callClient, MyApolloProvider };

@@ -7,11 +7,24 @@ export const GET_SITES = gql`
       name
       handle
       draft_description
+      settings
       keywords {
         id
         keyword
         volume
       }
+    }
+  }
+`;
+
+export const GET_SITE = gql`
+  query getSite($id: ID!) {
+    site(id: $id) {
+      id
+      name
+      handle
+      draft_description
+      settings
     }
   }
 `;

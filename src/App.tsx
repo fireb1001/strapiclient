@@ -12,6 +12,7 @@ import Articles from "./pages/Articles";
 import { TopNavbar } from "./components/TopNavbar";
 
 import ArticleEditor from "./pages/ArticleEditor";
+import SiteSettings from "./pages/SiteSettings";
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -107,6 +108,10 @@ const App: React.FC = () => {
                 <Route path="/sproviders" exact component={Sproviders} />
                 <Route path="/sites" component={SitesDashboard} />
                 <Route path="/article_editor/:id" component={ArticleEditor} />
+                <Route
+                  path="/site_settings/:site_id"
+                  component={SiteSettings}
+                />
               </div>
             </div>
           </div>

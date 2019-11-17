@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useMemo, useContext } from "react";
-import { useQuery, useMutation } from "@apollo/react-hooks";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/react-hooks";
 import { NEILPATEL_URL, MAP_CONTEXT_ACTIONS } from "../AppConstants";
 import { CREATE_KEYWORD, DELETE_KEYWORD } from "../graphql/keywords";
 import { Site, keyword } from "../common/types";
 import { CustomEditor } from "../components/CustomEditor";
-import { GET_SITES, UPDATE_SITE } from "../graphql/sites";
-import { CREATE_ARTICLE } from "../graphql/articles";
-import { useHistory } from "react-router-dom";
+import { GET_SITES, UPDATE_SITE, GET_SITE } from "../graphql/sites";
+import { CREATE_ARTICLE, GET_ARTICLES } from "../graphql/articles";
+import { useHistory, Link } from "react-router-dom";
 import { AppCtxt } from "../ctx";
+import { callClient } from "../ApolloProvider";
 
 interface SingleSiteProps {
   site: Site;
@@ -81,7 +82,7 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
           />
           <div>
             <button
-              className="btn btn-primary"
+              className="btn btn-primary m-1"
               onClick={e => {
                 e.preventDefault();
                 updateSite({
@@ -95,13 +96,37 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
               {"💾 Save"}
             </button>
             <button
-              className="btn btn-primary"
+              className="btn btn-primary m-1"
               onClick={e => {
                 setSite(site);
               }}
             >
-              {"🌐 Set Current"}
+              {"📍 Set Current"}
             </button>
+            <button
+              className="btn btn-primary m-1"
+              onClick={async _ => {
+                let { articles } = await callClient(GET_ARTICLES, {
+                  where: { site: site.id }
+                });
+                if (ipcRenderer) {
+                  await Promise.all(
+                    articles.map(async (article: any) => {
+                      console.log(article);
+                      ipcRenderer.send("writetofs", article);
+                    })
+                  );
+                }
+              }}
+            >
+              {"☁️ Sync Content"}
+            </button>
+            <Link
+              className="btn btn-primary m-1"
+              to={`/site_settings/${site.id}`}
+            >
+              {"⚙  Settings"}
+            </Link>
           </div>
         </div>
         <div className="rtl-area p-3 col-6">

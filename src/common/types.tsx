@@ -19,6 +19,8 @@ export type Site = {
   name: string;
   keywords: [keyword];
   draft_description: JSON;
+  settings: any;
+  handle: string;
 };
 
 export declare interface EditorProps {

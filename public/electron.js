@@ -132,3 +132,8 @@ ipcMain.on("open-kw-search", (event, data) => {
   kwSearchWindow.loadURL(`${data.url}${keyword}`);
   kwSearchWindow.show();
 });
+
+ipcMain.on("writetofs", (event, data) => {
+  const fs = require("fs");
+  fs.writeFileSync(`content\\${data.title}.md`, data.content);
+});

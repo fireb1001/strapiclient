@@ -1,18 +1,16 @@
-import React, { useState, useMemo, useEffect, createRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { Article } from "../common/types";
 import { readableTime } from "../common/functions";
 import ContentEditable from "react-contenteditable";
-import { History } from "history";
 import { GET_ARTICLE, UPDATE_ARTICLE } from "../graphql/articles";
-
-// @ts-ignore
-import draftToMarkdown from "draftjs-to-markdown";
-
 import { FormCheck } from "react-bootstrap";
 import { CustomEditor } from "../components/CustomEditor";
 import SuggestKeywords from "../components/SuggestKeywords";
 import { AppCtxt } from "../ctx";
+// @ts-ignore
+import draftToMarkdown from "draftjs-to-markdown";
+import { History } from "history";
 
 interface RouterProps {
   match: any;
@@ -82,6 +80,7 @@ export default function ArticleEditor({ match, history }: Props) {
   }, [data]);
 
   useEffect(() => {
+    window.addEventListener("goBackPressed", goBack);
     return () => {
       window.removeEventListener("goBackPressed", goBack);
     };
@@ -90,8 +89,6 @@ export default function ArticleEditor({ match, history }: Props) {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
   if (data) {
-    window.addEventListener("goBackPressed", goBack);
-
     // Types with object destructuring
     let { article }: { article: Article } = data;
     return (
