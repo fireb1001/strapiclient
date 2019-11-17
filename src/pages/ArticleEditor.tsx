@@ -37,7 +37,7 @@ export default function ArticleEditor({ match, history }: Props) {
       variables: {
         id: match.params.id,
         data: {
-          title: title,
+          title: title.trim(),
           rawcontent: rawEditorState,
           content: draftToMarkdown(
             rawEditorState,

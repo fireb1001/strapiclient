@@ -109,13 +109,12 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                 let { articles } = await callClient(GET_ARTICLES, {
                   where: { site: site.id }
                 });
+                console.log(articles);
                 if (ipcRenderer) {
-                  await Promise.all(
-                    articles.map(async (article: any) => {
-                      console.log(article);
-                      ipcRenderer.send("writetofs", article);
-                    })
-                  );
+                  let res = await ipcRenderer.invoke("write-files", {
+                    articles: articles
+                  });
+                  console.log(res);
                 }
               }}
             >
@@ -156,7 +155,7 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                     className="text-primary fas fa-plus"
                     onClick={async () => {
                       let newArticle = await createArticle({
-                        variables: { title: keyword.keyword }
+                        variables: { title: keyword.keyword, site: site.id }
                       });
                       let article_id = newArticle.data.createArticle.article.id;
                       history.push(`/article_editor/${article_id}`);

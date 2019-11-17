@@ -6,6 +6,8 @@ const BrowserView = electron.BrowserView;
 const Tray = electron.Tray;
 const path = require("path");
 const isDev = require("electron-is-dev");
+const fse = require("fs-extra");
+
 /**@type {electron.BrowserWindow} */
 let mainWindow;
 /**@type {electron.BrowserWindow} */
@@ -133,7 +135,20 @@ ipcMain.on("open-kw-search", (event, data) => {
   kwSearchWindow.show();
 });
 
-ipcMain.on("writetofs", (event, data) => {
-  const fs = require("fs");
-  fs.writeFileSync(`content\\${data.title}.md`, data.content);
+ipcMain.handle("write-files", async (event, data) => {
+  console.log("write-files");
+
+  if (fse.existsSync(`content`)) {
+    let done = await fse.emptyDir(`content`);
+    console.log("remove content done " + done);
+  } else {
+    await fse.mkdir(`content`);
+  }
+
+  await Promise.all(
+    data.articles.map(async article => {
+      fse.writeFileSync(`content\\${article.title}.md`, article.content);
+    })
+  );
+  return true;
 });

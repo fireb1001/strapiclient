@@ -27,6 +27,7 @@
     "draftjs-to-markdown": "^0.5.1",
     "draftjs-utils": "^0.9.4",
     "electron-is-dev": "^1.1.0",
+    "fs-extra": "^8.1.0",
     "graphql": "^14.5.8",
     "jquery": "^3.4.1",
     "markdown-draft-js": "^2.1.1",
