@@ -2,6 +2,8 @@ export type Article = {
   id: string;
   title: string;
   content: string;
+  extras: any;
+  description: string;
   rawcontent: string;
   createdAt: Date;
   updatedAt: Date;

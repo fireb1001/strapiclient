@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import { Article } from "../common/types";
 import { readableTime } from "../common/functions";
@@ -19,6 +19,43 @@ interface RouterProps {
 
 type Props = RouterProps;
 
+const CoverArea = ({ src, onSetImage }: any) => {
+  const [localSrc, setLocalSrc] = React.useState(src);
+  return (
+    <>
+      <div className="cover-area">
+        {localSrc && <img src={localSrc} alt="" />}
+        <h6>Cover :</h6>
+        <ContentEditable
+          html={localSrc}
+          onChange={e => {
+            setLocalSrc(e.target.value);
+            onSetImage(e.target.value);
+          }}
+        />
+      </div>
+    </>
+  );
+};
+
+const EdTextArea = ({ text, onSetText }: any) => {
+  const [localText, setLocalText] = React.useState(text);
+  return (
+    <>
+      <div className="edtext-area">
+        <ContentEditable
+          className="editable-line"
+          html={localText}
+          onChange={e => {
+            let textValue = e.target.value;
+            setLocalText(textValue);
+            onSetText(textValue);
+          }}
+        />
+      </div>
+    </>
+  );
+};
 export default function ArticleEditor({ match, history }: Props) {
   const { loading, error, data } = useQuery(GET_ARTICLE, {
     variables: { id: match.params.id }
@@ -27,10 +64,14 @@ export default function ArticleEditor({ match, history }: Props) {
   const { suggestFn } = React.useContext(AppCtxt);
 
   const [updateArticle] = useMutation(UPDATE_ARTICLE);
-  const [title, setTitle] = useState("");
-  const [articleData, setArticleData] = useState({ published: null });
-  const [suggestions, setSuggets] = useState("");
-  const [rawEditorState, setRawEditorState] = useState({});
+  const [title, setTitle] = React.useState("");
+  const [articleData, setArticleData] = React.useState({
+    published: false,
+    extras: {},
+    description: ""
+  });
+  const [suggestions, setSuggets] = React.useState("");
+  const [rawEditorState, setRawEditorState] = React.useState({});
 
   const saveArticle = async () => {
     await updateArticle({
@@ -45,8 +86,7 @@ export default function ArticleEditor({ match, history }: Props) {
             (entity: any, text: string) => {
               if (text) console.log(entity, text);
               if (entity.type === "IMAGE") {
-                return `![${entity.data.alt || ""}](${entity.data.src})*${entity
-                  .data.caption || ""}*`;
+                return `{{< figure src="${entity.data.src}" alt="${entity.data.alt}" caption="${entity.data.caption}" position="center" >}}`;
               }
               if (entity.type === "LINK") {
                 return ` [${text}](${entity.data.url})`;
@@ -54,7 +94,9 @@ export default function ArticleEditor({ match, history }: Props) {
             },
             {}
           ),
-          published: articleData.published
+          published: articleData.published,
+          extras: articleData.extras,
+          description: articleData.description
         }
       }
     });
@@ -67,19 +109,24 @@ export default function ArticleEditor({ match, history }: Props) {
     history.push("/");
   };
 
-  useMemo(() => {
+  React.useMemo(() => {
     if (data && data.article) {
-      setTitle("" + data.article.title);
+      let { article }: { article: Article } = data;
+      setTitle("" + article.title);
 
-      if (data.article.rawcontent) {
+      if (article.rawcontent) {
         setRawEditorState(data.article.rawcontent);
-        setArticleData({ ...articleData, published: data.article.published });
         //setEditorState(EditorState.createWithContent(rawContent));
       }
+      setArticleData({
+        extras: article.extras,
+        description: article.description,
+        published: article.published
+      });
     }
   }, [data]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     window.addEventListener("goBackPressed", goBack);
     return () => {
       window.removeEventListener("goBackPressed", goBack);
@@ -103,6 +150,33 @@ export default function ArticleEditor({ match, history }: Props) {
           <span className="post-time">{readableTime(article.createdAt)}</span>
         </div>
         <hr />
+        <div className="row">
+          <CoverArea
+            className="col-6"
+            src={
+              article.extras && article.extras.cover ? article.extras.cover : ""
+            }
+            onSetImage={(image: string) => {
+              setArticleData({
+                ...articleData,
+                extras: { ...article.extras, cover: image }
+              });
+            }}
+          />
+          <EdTextArea
+            className="col-6"
+            text={article.description ? article.description : ""}
+            onSetText={(newText: string) => {
+              console.log(articleData);
+              let trimmed = newText
+                .replace(/&nbsp;/gi, "")
+                .replace(/<br>/gi, "");
+
+              setArticleData({ ...articleData, description: trimmed });
+            }}
+          />
+        </div>
+        <hr />
         <FormCheck
           type="switch"
           label="Published"
@@ -119,7 +193,7 @@ export default function ArticleEditor({ match, history }: Props) {
         <div className="row m-2">
           <div className="col-8 editor-container ">
             <CustomEditor
-              rawContent={data.article.rawcontent}
+              rawContent={article.rawcontent}
               handleUpdateRaw={rawContent => {
                 setRawEditorState(rawContent);
               }}

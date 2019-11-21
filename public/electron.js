@@ -147,7 +147,7 @@ ipcMain.handle("write-files", async (event, data) => {
 
   await Promise.all(
     data.articles.map(async article => {
-      fse.writeFileSync(`content\\${article.title}.md`, article.content);
+      fse.writeFileSync(`content\\${article.title}.md`, article.body);
     })
   );
   return true;

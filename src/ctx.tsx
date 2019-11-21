@@ -1,5 +1,6 @@
 import React, { useReducer, createContext, useMemo } from "react";
 import { Site } from "./common/types";
+import { any } from "prop-types";
 
 interface Action {}
 
@@ -13,6 +14,11 @@ class ToggleShowArchived implements Action {
   flag!: boolean;
 }
 
+class ToggleShowMediaModal implements Action {
+  type: "TOGGLE_SHOW_MEDIA_MODAL" = "TOGGLE_SHOW_MEDIA_MODAL";
+  payload!: any;
+}
+
 class SuggestAction implements Action {
   type: "SUGGEST_ACTION" = "SUGGEST_ACTION";
   payload!: any;
@@ -20,8 +26,11 @@ class SuggestAction implements Action {
 
 const initialState = {
   show_archived: false,
-  toggleShowState: (payload: any) => {},
+  show_media_modal: false,
+  toggleShowState: (flag: boolean) => {},
+  toggleShowMediaModal: (payload: any) => {},
   site: {} as Site,
+  image_data: { src: "", alt: "", caption: "" },
   setSite: (site: any) => {},
   suggest_kw: { keyword: "" },
   suggestFn: (payload: any) => {}
@@ -35,6 +44,12 @@ function appReducer(state: any, action: any) {
       return {
         ...state,
         show_archived: action.flag
+      };
+    case "TOGGLE_SHOW_MEDIA_MODAL":
+      return {
+        ...state,
+        show_media_modal: action.payload.show,
+        image_data: action.payload.image_data
       };
     case "SUGGEST_ACTION":
       return {
@@ -71,6 +86,12 @@ function CtxtProvider(props: any) {
     dispatch(toggAction);
   }
 
+  function toggleShowMediaModal(payload: any) {
+    let toggAction = new ToggleShowMediaModal();
+    toggAction.payload = payload;
+    dispatch(toggAction);
+  }
+
   function setSite(site: Site) {
     let changeSiteAction = new ChangeSite();
     changeSiteAction.payload = site;
@@ -94,6 +115,9 @@ function CtxtProvider(props: any) {
     <AppCtxt.Provider
       value={{
         show_archived: state.show_archived,
+        show_media_modal: state.show_media_modal,
+        image_data: state.image_data,
+        toggleShowMediaModal,
         toggleShowState,
         site: state.site as Site,
         setSite,

@@ -86,46 +86,44 @@ const Link = (props: any) => {
 };
 
 const InsertImage = (props: any) => {
-  let [imageData, setImageData] = React.useState({
-    src: "",
-    alt: "",
-    caption: ""
-  });
+  let [imageData, setImageData] = React.useState(props.imageData);
+  // to solve Setting React Hooks states in a sync-like manner
+  React.useEffect(() => {
+    props.onValue(imageData);
+  }, [imageData]);
+
   return (
     <>
-      <label>
-        URL:
+      <div className="form-group">
+        <label>Source</label>
         <input
           type="text"
+          className="form-control"
           value={imageData.src}
-          onChange={e => {
-            setImageData({ ...imageData, src: e.target.value });
-            props.onValue(imageData);
-          }}
+          onChange={e => setImageData({ ...imageData, src: e.target.value })}
         />
-      </label>
-      <label>
-        ALT:
+      </div>
+      <div className="form-group">
+        <label>ALT</label>
         <input
           type="text"
+          className="form-control"
           value={imageData.alt}
-          onChange={e => {
-            setImageData({ ...imageData, alt: e.target.value });
-            props.onValue(imageData);
-          }}
+          onChange={e => setImageData({ ...imageData, alt: e.target.value })}
         />
-      </label>
-      <label>
-        Caption:
+      </div>
+
+      <div className="form-group">
+        <label>Caption</label>
         <input
           type="text"
+          className="form-control"
           value={imageData.caption}
-          onChange={e => {
-            setImageData({ ...imageData, caption: e.target.value });
-            props.onValue(imageData);
-          }}
+          onChange={e =>
+            setImageData({ ...imageData, caption: e.target.value })
+          }
         />
-      </label>
+      </div>
     </>
   );
 };
@@ -134,18 +132,27 @@ interface EditorModalProps {
   show: boolean;
   onToggle: (flag: boolean) => void;
   onValue: (value: any) => void;
+  onSave: (imageData: any) => void;
 }
 
 function EditorModal(props: EditorModalProps) {
+  const { image_data } = React.useContext(AppCtxt);
+  let [internalImageData, setInternalImageData] = React.useState({});
+
   return (
     <Modal show={props.show} onHide={() => props.onToggle(false)}>
       <Modal.Header closeButton>
         <Modal.Title>Modal heading</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {JSON.stringify(image_data)}
         <InsertImage
+          imageData={
+            image_data ? image_data : { src: "", alt: "", caption: "" }
+          }
           onValue={(value: any) => {
             props.onValue(value);
+            setInternalImageData(value);
           }}
         />
       </Modal.Body>
@@ -157,6 +164,8 @@ function EditorModal(props: EditorModalProps) {
           variant="primary"
           onClick={() => {
             props.onToggle(false);
+            console.log("internalImageData", internalImageData);
+            props.onSave(internalImageData);
           }}
         >
           Save Changes
@@ -167,9 +176,23 @@ function EditorModal(props: EditorModalProps) {
 }
 
 export function CustomEditor(props: CustomEditorProps) {
-  const { suggest_kw } = React.useContext(AppCtxt);
+  const {
+    suggest_kw,
+    show_media_modal,
+    toggleShowMediaModal
+  } = React.useContext(AppCtxt);
 
   const [editorRef, setEditorRef] = React.useState(React.createRef<any>());
+  const [showEditorModal, setShowEditorModal] = React.useState(false);
+  const [imageData, setImageData] = React.useState({
+    src: "",
+    alt: "",
+    caption: ""
+  });
+
+  React.useEffect(() => {
+    setShowEditorModal(show_media_modal);
+  });
 
   const setDomEditorRef = (ref: any) => {
     setEditorRef(ref);
@@ -198,12 +221,6 @@ export function CustomEditor(props: CustomEditorProps) {
   }
 
   const [editorState, setEditorState] = React.useState(initState);
-  const [showEditorModal, setShowEditorModal] = React.useState(false);
-  const [imageData, setImageData] = React.useState({
-    src: "",
-    alt: "",
-    caption: ""
-  });
 
   const [editMode, setEditMode] = React.useState<EDIT_MODES>(
     EDIT_MODES.DEFAULT
@@ -228,6 +245,23 @@ export function CustomEditor(props: CustomEditorProps) {
 
     // @ts-ignore
     if (editorRef && editorRef.refs) editorRef.focus();
+  };
+
+  const editorFocus = async (blockKey: string, newEditorState: any) => {
+    console.log(blockKey);
+
+    await setTimeout(() => {}, 500);
+    setEditorState(
+      EditorState.forceSelection(
+        newEditorState,
+        new SelectionState({
+          anchorKey: blockKey,
+          anchorOffset: 0,
+          focusKey: blockKey,
+          focusOffset: 0
+        })
+      )
+    );
   };
 
   // and now it's only working when value change ! so string not changed
@@ -285,23 +319,13 @@ export function CustomEditor(props: CustomEditorProps) {
         blockKey,
         command === KEY_COMMANDS.CTRL_PAGEUP ? "UP" : "DOWN"
       );
-
-      let newEditorState = EditorState.push(
+      const newEditorState = EditorState.push(
         editorState,
-        // @ts-ignore
         ContentState.createFromBlockArray(newBlocksArr),
         "change-block-data"
       );
-      newEditorState = EditorState.forceSelection(
-        newEditorState,
-        new SelectionState({
-          anchorKey: blockKey,
-          anchorOffset: 0,
-          focusKey: blockKey,
-          focusOffset: 0
-        })
-      );
-      setEditorState(newEditorState);
+
+      editorFocus(blockKey, newEditorState);
       return "handled";
     }
 
@@ -344,7 +368,7 @@ export function CustomEditor(props: CustomEditorProps) {
       if (editMode === EDIT_MODES.BLOCK) {
         //Modifier.removeInlineStyle()
         const blockKey = editorState.getSelection().getAnchorKey();
-
+        console.log("old blockKey", blockKey);
         const currentBlock = editorState
           .getCurrentContent()
           .getBlockForKey(blockKey);
@@ -364,15 +388,24 @@ export function CustomEditor(props: CustomEditorProps) {
             }
             return block;
           });
-
+        console.log("newkey blockKey", newkey);
         //console.log("newBlockMap.toArray()", newBlockMap.toArray());
-
+        let newEditorState = EditorState.push(
+          editorState,
+          // @ts-ignore
+          ContentState.createFromBlockArray(newBlockMap.toArray()),
+          "insert-fragment"
+        );
+        // set new state and force selection to new key block
         setEditorState(
-          EditorState.push(
-            editorState,
-            // @ts-ignore
-            ContentState.createFromBlockArray(newBlockMap.toArray()),
-            "insert-fragment"
+          EditorState.forceSelection(
+            newEditorState,
+            new SelectionState({
+              anchorKey: newkey,
+              anchorOffset: 0,
+              focusKey: newkey,
+              focusOffset: 0
+            })
           )
         );
         /*
@@ -482,29 +515,49 @@ export function CustomEditor(props: CustomEditorProps) {
       <EditorModal
         show={showEditorModal}
         onValue={value => setImageData(value)}
-        onToggle={(flag: boolean) => {
+        onToggle={(flag: boolean) => toggleShowMediaModal({ show: flag })}
+        onSave={(imageData: any) => {
           if (imageData && imageData.src) {
-            // adding image block
             const contentState = editorState.getCurrentContent();
-            const contentStateWithEntity = contentState.createEntity(
-              "IMAGE",
-              "IMMUTABLE",
-              {
-                src: imageData.src,
-                alt: imageData.alt ? imageData.alt : "",
-                caption: imageData.caption ? imageData.caption : ""
-              }
-            );
-            const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-            const newEditorState = EditorState.set(editorState, {
-              currentContent: contentStateWithEntity
-            });
-            setEditorState(
-              // its important to use whitespace
-              AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, " ")
-            );
+            if (imageData.entity_key) {
+              // modify image block
+              let newContentState = contentState.mergeEntityData(
+                imageData.entity_key,
+                {
+                  src: imageData.src,
+                  alt: imageData.alt,
+                  caption: imageData.caption
+                }
+              );
+              const newEditorState = EditorState.set(editorState, {
+                currentContent: newContentState
+              });
+              setEditorState(newEditorState);
+            } else {
+              // adding image block
+              const contentStateWithEntity = contentState.createEntity(
+                "IMAGE",
+                "IMMUTABLE",
+                {
+                  src: imageData.src,
+                  alt: imageData.alt ? imageData.alt : "",
+                  caption: imageData.caption ? imageData.caption : ""
+                }
+              );
+              const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+              const newEditorState = EditorState.set(editorState, {
+                currentContent: contentStateWithEntity
+              });
+              setEditorState(
+                // its important to use whitespace
+                AtomicBlockUtils.insertAtomicBlock(
+                  newEditorState,
+                  entityKey,
+                  " "
+                )
+              );
+            }
           }
-          setShowEditorModal(flag);
         }}
       />
       <Editor
@@ -537,7 +590,7 @@ export function CustomEditor(props: CustomEditorProps) {
         alt=""
         style={{ width: "3em" }}
         onClick={() => {
-          setShowEditorModal(true);
+          toggleShowMediaModal({ show: true });
         }}
       />
       <span
@@ -546,6 +599,14 @@ export function CustomEditor(props: CustomEditorProps) {
         }
       >
         STATE
+      </span>
+      <span
+        className="bold text-dark"
+        onClick={() => {
+          editorFocus("ftqfh", editorState);
+        }}
+      >
+        Focus
       </span>
     </>
   );

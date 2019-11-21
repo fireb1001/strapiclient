@@ -6,6 +6,8 @@ export const GET_ARTICLES = gql`
       id
       title
       content
+      description
+      extras
       rawcontent
       createdAt
       updatedAt
@@ -20,6 +22,8 @@ export const GET_ARTICLE = gql`
       id
       title
       content
+      description
+      extras
       rawcontent
       createdAt
       updatedAt
@@ -35,6 +39,8 @@ export const UPDATE_ARTICLE = gql`
         id
         title
         content
+        description
+        extras
         rawcontent
         createdAt
         updatedAt

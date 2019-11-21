@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useContext } from "react";
 import { useQuery, useMutation, useLazyQuery } from "@apollo/react-hooks";
 import { NEILPATEL_URL, MAP_CONTEXT_ACTIONS } from "../AppConstants";
 import { CREATE_KEYWORD, DELETE_KEYWORD } from "../graphql/keywords";
-import { Site, keyword } from "../common/types";
+import { Site, keyword, Article } from "../common/types";
 import { CustomEditor } from "../components/CustomEditor";
 import { GET_SITES, UPDATE_SITE, GET_SITE } from "../graphql/sites";
 import { CREATE_ARTICLE, GET_ARTICLES } from "../graphql/articles";
@@ -109,10 +109,23 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                 let { articles } = await callClient(GET_ARTICLES, {
                   where: { site: site.id }
                 });
-                console.log(articles);
+                let fs_articles = articles.map((article: Article) => ({
+                  title: article.title,
+                  body: `+++
+title= "${article.title}"
+cover= "${article.extras && article.extras.cover ? article.extras.cover : ""}"
+date= ${article.createdAt}
+description= """
+${article.description ? article.description : ""}
+"""
++++
+${article.content}
+                  `
+                }));
+                console.log(fs_articles);
                 if (ipcRenderer) {
                   let res = await ipcRenderer.invoke("write-files", {
-                    articles: articles
+                    articles: fs_articles
                   });
                   console.log(res);
                 }

@@ -57,6 +57,11 @@
   border-bottom: 2px #adb0d6 dashed;
   margin: 0 0.5em;
 }
+
 .editable-line:empty {
   padding: 0 0.5em;
+}
+
+.cover-area img {
+  max-height: 250px;
 }
