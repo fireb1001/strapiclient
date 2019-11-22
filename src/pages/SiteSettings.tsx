@@ -62,14 +62,20 @@ export default function SiteSettings({ match, history }: Props) {
       <>
         <h1>Site id : {match.params.site_id}</h1>
         <h3>Site handle : {siteData.handle}</h3>
+        {siteData.name && (
+          <div>
+            <b>Name</b>
+            <ContentEditable
+              className="editable-line"
+              html={siteData.name}
+              onChange={e => {
+                setSiteData({ ...siteData, name: e.target.value });
+              }}
+            />
+          </div>
+        )}
 
-        <ContentEditable
-          html={siteData.name}
-          onChange={e => {
-            setSiteData({ ...siteData, name: e.target.value });
-          }}
-        />
-
+        <hr />
         {settingsArr &&
           settingsArr.map(keyName => (
             <div className="p-2" key={keyName}>
@@ -77,7 +83,12 @@ export default function SiteSettings({ match, history }: Props) {
               <ContentEditable
                 className="editable-line"
                 html={siteSettings![keyName] ? siteSettings![keyName] : ""}
-                onChange={e => setSetting(keyName, e.target.value)}
+                onChange={e => {
+                  let val = e.target.value
+                    .replace(/&nbsp;/gi, "")
+                    .replace(/<br>/gi, "");
+                  setSetting(keyName, val);
+                }}
               />
             </div>
           ))}

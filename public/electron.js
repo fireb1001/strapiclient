@@ -136,18 +136,21 @@ ipcMain.on("open-kw-search", (event, data) => {
 });
 
 ipcMain.handle("write-files", async (event, data) => {
-  console.log("write-files");
+  console.log("write-files", data.path);
 
-  if (fse.existsSync(`content`)) {
-    let done = await fse.emptyDir(`content`);
+  if (fse.existsSync(`${data.path}\\content\\post`)) {
+    let done = await fse.emptyDir(`${data.path}\\content\\post`);
     console.log("remove content done " + done);
   } else {
-    await fse.mkdir(`content`);
+    await fse.mkdir(`${data.path}\\content\\post`);
   }
 
   await Promise.all(
     data.articles.map(async article => {
-      fse.writeFileSync(`content\\${article.title}.md`, article.body);
+      fse.writeFileSync(
+        `${data.path}\\content\\post\\${article.title}.md`,
+        article.body
+      );
     })
   );
   return true;

@@ -109,11 +109,18 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                 let { articles } = await callClient(GET_ARTICLES, {
                   where: { site: site.id }
                 });
+                let {
+                  site: { settings }
+                } = await callClient(GET_SITE, {
+                  id: site.id
+                });
+                console.log(settings);
                 let fs_articles = articles.map((article: Article) => ({
                   title: article.title,
                   body: `+++
 title= "${article.title}"
 cover= "${article.extras && article.extras.cover ? article.extras.cover : ""}"
+author= "مؤمن"
 date= ${article.createdAt}
 description= """
 ${article.description ? article.description : ""}
@@ -125,7 +132,8 @@ ${article.content}
                 console.log(fs_articles);
                 if (ipcRenderer) {
                   let res = await ipcRenderer.invoke("write-files", {
-                    articles: fs_articles
+                    articles: fs_articles,
+                    path: settings.local_path ? settings.local_path : null
                   });
                   console.log(res);
                 }
