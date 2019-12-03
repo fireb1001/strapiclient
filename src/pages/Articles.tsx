@@ -36,7 +36,17 @@ const SingleArticle: React.FC<SingleArticleProps> = ({
     <>
       <div className="card m-2 p-3 pr-5">
         <div className="row" style={{ direction: "rtl", textAlign: "right" }}>
-          <div className="col-11">
+          <div className="col-2">
+            {article.extras && article.extras.cover && (
+              <img
+                className="card-img3"
+                src={article.extras.cover}
+                alt="Card image cap"
+                style={{ maxWidth: "100%" }}
+              />
+            )}
+          </div>
+          <div className="col-9">
             <Link className="d-link" to={`/article_editor/${article.id}`}>
               <h3 className="">{article.title}</h3> {" " + article.published}
             </Link>
@@ -111,7 +121,8 @@ export default function Articles() {
   if (error) return <p>Error :(</p>;
 
   return (
-    <>
+    <div id="articles">
+      <h3 className="text-gray-900 h-bborder">Articles </h3>
       <FormCheck
         type="switch"
         label="Show Only Archived"
@@ -122,8 +133,6 @@ export default function Articles() {
         id="custom-switch"
         checked={showArchived}
       />
-
-      <h3 className="text-gray-900 h-bborder">Articles </h3>
       {data.articles &&
         data.articles.map((article: Article) => (
           <React.Fragment key={article.id}>
@@ -146,6 +155,6 @@ export default function Articles() {
       >
         Add New Article
       </button>
-    </>
+    </div>
   );
 }

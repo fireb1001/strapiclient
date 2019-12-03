@@ -309,6 +309,13 @@ export function CustomEditor(props: CustomEditorProps) {
       return "handled";
     }
 
+    if (command === KEY_COMMANDS.CTRL_L) {
+      setEditorState(
+        RichUtils.toggleBlockType(editorState, "unordered-list-item")
+      );
+      return "handled";
+    }
+
     if (
       command === KEY_COMMANDS.CTRL_PAGEUP ||
       command === KEY_COMMANDS.CTRL_PAGEDOWN

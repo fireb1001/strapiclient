@@ -12,6 +12,7 @@ export const KEY_COMMANDS = {
   ALT_B: "ALT_B",
   CTRL_N: "CTRL_N",
   CTRL_D: "CTRL_D",
+  CTRL_L: "CTRL_L",
   CTRL_PAGEUP: "CTRL_PAGEUP",
   CTRL_PAGEDOWN: "CTRL_PAGEDOWN"
 };
@@ -59,6 +60,10 @@ export function myKeyBindingFn(e: any): string {
 
   if (e.keyCode === 78 /* N key */ && AltCrtlPressed) {
     return KEY_COMMANDS.CTRL_ALT_N;
+  }
+
+  if (e.keyCode === 76 /* L key */ && hasCommandModifier(e)) {
+    return KEY_COMMANDS.CTRL_L;
   }
 
   if (e.keyCode === 66 /* B key */ && e.getModifierState("Alt")) {

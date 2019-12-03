@@ -8,11 +8,10 @@ import { WebviewTag } from "electron";
 import SideBar from "./components/SideBar";
 import SitesDashboard from "./pages/SitesDashboard";
 import Sproviders from "./pages/ServiceProviders";
-import Articles from "./pages/Articles";
 import { TopNavbar } from "./components/TopNavbar";
-
 import ArticleEditor from "./pages/ArticleEditor";
 import SiteSettings from "./pages/SiteSettings";
+import Dashboard from "./pages/Dashboard";
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -104,7 +103,7 @@ const App: React.FC = () => {
                 </div>
               )}
               <div className="container-fluid">
-                <Route path="/" exact component={Articles} />
+                <Route path="/" exact component={Dashboard} />
                 <Route path="/sproviders" exact component={Sproviders} />
                 <Route path="/sites" component={SitesDashboard} />
                 <Route path="/article_editor/:id" component={ArticleEditor} />

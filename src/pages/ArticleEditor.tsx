@@ -24,7 +24,7 @@ const CoverArea = ({ src, onSetImage }: any) => {
   return (
     <>
       <div className="cover-area">
-        {localSrc && <img src={localSrc} alt="" />}
+        {localSrc && <img src={localSrc} alt="" style={{ maxWidth: "100%" }} />}
         <h6>Cover :</h6>
         <ContentEditable
           html={localSrc}
@@ -56,6 +56,7 @@ const EdTextArea = ({ text, onSetText }: any) => {
     </>
   );
 };
+
 export default function ArticleEditor({ match, history }: Props) {
   const { loading, error, data } = useQuery(GET_ARTICLE, {
     variables: { id: match.params.id }
@@ -151,30 +152,33 @@ export default function ArticleEditor({ match, history }: Props) {
         </div>
         <hr />
         <div className="row">
-          <CoverArea
-            className="col-6"
-            src={
-              article.extras && article.extras.cover ? article.extras.cover : ""
-            }
-            onSetImage={(image: string) => {
-              setArticleData({
-                ...articleData,
-                extras: { ...article.extras, cover: image }
-              });
-            }}
-          />
-          <EdTextArea
-            className="col-6"
-            text={article.description ? article.description : ""}
-            onSetText={(newText: string) => {
-              console.log(articleData);
-              let trimmed = newText
-                .replace(/&nbsp;/gi, "")
-                .replace(/<br>/gi, "");
+          <div className="col-6">
+            <CoverArea
+              src={
+                article.extras && article.extras.cover
+                  ? article.extras.cover
+                  : ""
+              }
+              onSetImage={(image: string) => {
+                setArticleData({
+                  ...articleData,
+                  extras: { ...article.extras, cover: image }
+                });
+              }}
+            />
+          </div>
+          <div className="col-6">
+            <EdTextArea
+              text={article.description ? article.description : ""}
+              onSetText={(newText: string) => {
+                let trimmed = newText
+                  .replace(/&nbsp;/gi, "")
+                  .replace(/<br>/gi, "");
 
-              setArticleData({ ...articleData, description: trimmed });
-            }}
-          />
+                setArticleData({ ...articleData, description: trimmed });
+              }}
+            />
+          </div>
         </div>
         <hr />
         <FormCheck

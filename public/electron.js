@@ -145,6 +145,22 @@ ipcMain.handle("write-files", async (event, data) => {
     await fse.mkdir(`${data.path}\\content\\post`);
   }
 
+  var obj = {
+    title: "للايجار معدات",
+    menu: {
+      table: [
+        {
+          identifier: "about"
+        }
+      ]
+    }
+  };
+  // Write site config file if config changed
+  await fse.writeFileSync(
+    `${data.path}\\content\\config.json`,
+    JSON.stringify(obj, null, 2)
+  );
+
   await Promise.all(
     data.articles.map(async article => {
       fse.writeFileSync(
@@ -153,5 +169,6 @@ ipcMain.handle("write-files", async (event, data) => {
       );
     })
   );
+
   return true;
 });
