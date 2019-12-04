@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@apollo/react-hooks";
 import { GET_SITE, UPDATE_SITE } from "../graphql/sites";
 import { Site } from "../common/types";
 import ContentEditable from "react-contenteditable";
+import InlineEditable from "../components/InlineEditable";
 
 interface RouterProps {
   match: any;
@@ -32,19 +33,57 @@ export default function SiteSettings({ match, history }: Props) {
     history.push("/sites");
   };
 
-  const setSetting = (key: string, value: any) => {
-    setSiteSettings({ ...siteSettings, [key]: value });
+  const setSetting = (key: string, value: any, level?: string) => {
+    if (level) {
+      let newVal = { ...siteSettings[level], [key]: value };
+      console.log(newVal, { ...siteSettings, [level]: newVal });
+      setSiteSettings({ ...siteSettings, [level]: newVal });
+    } else setSiteSettings({ ...siteSettings, [key]: value });
   };
 
-  const settingsArr = [
-    "type",
-    "baseUrl",
-    "DefaultContentLanguage",
-    "googleAnalytics",
-    "paginate",
-    "theme",
-    "local_path"
-  ];
+  const setParam = (key: string, in_key: any, value: any) => {
+    let params = siteSettings && siteSettings.params ? siteSettings.params : {};
+    let newInVal = null;
+    if (!in_key) {
+      // array
+      newInVal = params[key] && params[key].length ? [...params[key]] : [];
+      // Add only to 0 index
+      newInVal[0] = value;
+    } else {
+      newInVal = { ...params[key], [in_key]: value };
+    }
+    setSiteSettings({
+      ...siteSettings,
+      params: { ...params, [key]: newInVal }
+    });
+  };
+
+  const reqsettings = {
+    devUse: ["type", "local_path"],
+    settingsArr: [
+      "baseUrl",
+      "DefaultContentLanguage",
+      "googleAnalytics",
+      "paginate",
+      "theme"
+    ],
+    params: [
+      { index: "defaultTheme", type: "string" },
+      { index: "subtitle", type: "string" },
+      { index: "custom_css", type: "array", of: "strings" },
+      {
+        index: "logo",
+        type: "object",
+        childs: [
+          {
+            index: "logoText",
+            type: "string"
+          }
+        ]
+      }
+    ],
+    menu: { main: ["identifier", "name", "url"] }
+  };
 
   React.useEffect(() => {
     window.addEventListener("goBackPressed", goBack);
@@ -75,28 +114,145 @@ export default function SiteSettings({ match, history }: Props) {
           </div>
         )}
 
-        <hr />
-        {settingsArr &&
-          settingsArr.map(keyName => (
-            <div className="p-2" key={keyName}>
-              <b>{keyName}</b>
-              <ContentEditable
-                className="editable-line"
-                html={siteSettings![keyName] ? siteSettings![keyName] : ""}
-                onChange={e => {
-                  let val = e.target.value
-                    .replace(/&nbsp;/gi, "")
-                    .replace(/<br>/gi, "");
-                  setSetting(keyName, val);
-                }}
+        {reqsettings && reqsettings.settingsArr && (
+          <>
+            <hr />
+            {reqsettings.settingsArr.map(keyName => (
+              <InlineEditable
+                key={keyName}
+                label={keyName}
+                html={siteSettings![keyName]}
+                onChange={val => setSetting(keyName, val)}
               />
-            </div>
-          ))}
+            ))}
+          </>
+        )}
+
+        {reqsettings && reqsettings.devUse && (
+          <>
+            <hr />
+            {reqsettings.devUse.map(keyName => (
+              <InlineEditable
+                key={keyName}
+                label={keyName}
+                html={
+                  siteSettings.devUse && siteSettings.devUse[keyName]
+                    ? siteSettings.devUse[keyName]
+                    : ""
+                }
+                onChange={val => setSetting(keyName, val, "devUse")}
+              />
+            ))}
+          </>
+        )}
+
+        {/*
+        {reqsettings && reqsettings.params && (
+          <>
+            <hr />
+            {reqsettings.params.map(param => {
+              if (siteSettings && siteSettings.params)
+                return (
+                  <React.Fragment key={param.index}>
+                    {param.type === "string" && (
+                      <InlineEditable
+                        label={param.index}
+                        html={siteSettings!.params![param.index]}
+                        onChange={val => setSetting(param.index, val, "params")}
+                      />
+                    )}
+
+                    {param.type === "array" && (
+                      <div className="bg-gray-300 m-2 p-2 border-left-primary">
+                        <h3>{param.index}</h3>
+                        <InlineEditable
+                          html={
+                            siteSettings.params[param.index] &&
+                            siteSettings.params[param.index][0]
+                              ? siteSettings.params[param.index][0]
+                              : ""
+                          }
+                          onChange={val => setParam(param.index, null, val)}
+                        />
+                      </div>
+                    )}
+                    {param.type === "object" && (
+                      <div className="bg-gray-300 m-2 p-2 border-left-primary">
+                        <h3>{param.index}</h3>
+                        {param.childs &&
+                          param.childs.map(child => (
+                            <React.Fragment key={child.index}>
+                              {child.type === "string" && (
+                                <InlineEditable
+                                  label={child.index}
+                                  html={
+                                    siteSettings.params[param.index] &&
+                                    siteSettings.params[param.index][
+                                      child.index
+                                    ]
+                                      ? siteSettings.params[param.index][
+                                          child.index
+                                        ]
+                                      : ""
+                                  }
+                                  onChange={val =>
+                                    setParam(param.index, child.index, val)
+                                  }
+                                />
+                              )}
+                            </React.Fragment>
+                          ))}
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+            })}
+          </>
+        )}
+          */}
 
         <button
           className="btn btn-primary m-2"
           onClick={_ => {
             console.log(siteSettings);
+            siteSettings.title = siteData.name;
+            // set hugo custom data manually
+            siteSettings.disableKinds = ["taxonomy", "taxonomyTerm"];
+            siteSettings.params = {
+              custom_css: ["css/custom.css"],
+              defaultTheme: "dark",
+              logo: {
+                logoText: siteData.name
+              },
+              subtitle: ""
+            };
+            // todo manage links dynamicly
+            /*
+"menu": {
+    "main": [
+      {
+        "identifier": "about",
+        "name": "من نحن",
+        "url": "/about"
+      },
+      {
+        "identifier": "image",
+        "name": "الصور",
+        "url": "/image"
+      },
+      {
+        "identifier": "wholesaleplaces",
+        "name": "اماكن بيع الجملة",
+        "url": "https://wholesaleplaces.online/"
+      }
+    ]
+  }
+            */
+            /*
+              siteSettings.params = siteSettings.params
+                ? siteSettings.params
+              : { logo: "" };
+            */
             updateSite({
               variables: {
                 id: match.params.site_id,

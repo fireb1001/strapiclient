@@ -137,6 +137,7 @@ ipcMain.on("open-kw-search", (event, data) => {
 
 ipcMain.handle("write-files", async (event, data) => {
   console.log("write-files", data.path);
+  delete data.settings.devUse;
 
   if (fse.existsSync(`${data.path}\\content\\post`)) {
     let done = await fse.emptyDir(`${data.path}\\content\\post`);
@@ -145,20 +146,10 @@ ipcMain.handle("write-files", async (event, data) => {
     await fse.mkdir(`${data.path}\\content\\post`);
   }
 
-  var obj = {
-    title: "للايجار معدات",
-    menu: {
-      table: [
-        {
-          identifier: "about"
-        }
-      ]
-    }
-  };
   // Write site config file if config changed
   await fse.writeFileSync(
-    `${data.path}\\content\\config.json`,
-    JSON.stringify(obj, null, 2)
+    `${data.path}\\config.json`,
+    JSON.stringify(data.settings, null, 2)
   );
 
   await Promise.all(

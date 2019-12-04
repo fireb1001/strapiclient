@@ -205,7 +205,7 @@ export function CustomEditor(props: CustomEditorProps) {
     }
   ]);
 
-  let initState;
+  let initState: any = null;
 
   if (props.rawContent) {
     try {
@@ -213,6 +213,7 @@ export function CustomEditor(props: CustomEditorProps) {
         convertFromRaw(props.rawContent),
         decorator
       );
+      //props.handleUpdateRaw(initState);
     } catch (error) {
       initState = EditorState.createEmpty(decorator);
     }
@@ -342,7 +343,7 @@ export function CustomEditor(props: CustomEditorProps) {
       let newBlockMap = editorState
         .getCurrentContent()
         .getBlockMap()
-        .filter(block => block!.getKey() != blockKey);
+        .filter((block: any) => block!.getKey() != blockKey);
       setEditorState(
         EditorState.push(
           editorState,
@@ -385,7 +386,7 @@ export function CustomEditor(props: CustomEditorProps) {
         const newBlockMap = editorState
           .getCurrentContent()
           .getBlockMap()
-          .map((block, key) => {
+          .map((block: any, key: any) => {
             if (key === blockKey) {
               return new ContentBlock({
                 key: newkey,

@@ -9,6 +9,7 @@ import { CREATE_ARTICLE, GET_ARTICLES } from "../graphql/articles";
 import { useHistory, Link } from "react-router-dom";
 import { AppCtxt } from "../ctx";
 import { callClient } from "../ApolloProvider";
+import { convertFromRaw } from "draft-js";
 
 interface SingleSiteProps {
   site: Site;
@@ -25,7 +26,7 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
 
   const [createArticle] = useMutation(CREATE_ARTICLE);
 
-  const [rawEditorState, setRawEditorState] = useState({});
+  const [rawEditorState, setRawEditorState] = useState(site.draft_description);
 
   const [createKeyword] = useMutation(CREATE_KEYWORD, {
     refetchQueries: [{ query: GET_SITES }]
@@ -85,10 +86,26 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
               className="btn btn-primary m-1"
               onClick={e => {
                 e.preventDefault();
+                let site_settings = site.settings;
+                if (site.settings["params"] && rawEditorState) {
+                  // console.log(contentState);
+                  site_settings = {
+                    ...site.settings,
+                    params: {
+                      ...site.settings["params"],
+                      //@ts-ignore
+                      subtitle: convertFromRaw(rawEditorState).getPlainText()
+                    }
+                  };
+                }
+
                 updateSite({
                   variables: {
                     id: site.id,
-                    data: { draft_description: rawEditorState }
+                    data: {
+                      draft_description: rawEditorState,
+                      settings: site_settings
+                    }
                   }
                 });
               }}
@@ -129,11 +146,21 @@ ${article.description ? article.description : ""}
 ${article.content}
                   `
                 }));
+
+                // hide posts page from site map
+                fs_articles.push({
+                  title: "_index",
+                  body: JSON.stringify({ private: true })
+                });
                 console.log(fs_articles);
                 if (ipcRenderer) {
                   let res = await ipcRenderer.invoke("write-files", {
                     articles: fs_articles,
-                    path: settings.local_path ? settings.local_path : null
+                    path:
+                      settings.devUse && settings.devUse.local_path
+                        ? settings.devUse.local_path
+                        : null,
+                    settings: settings
                   });
                   console.log(res);
                 }
