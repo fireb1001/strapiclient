@@ -31,6 +31,13 @@ export default function SideBar() {
             Dashboard
           </Link>
         </li>
+
+        <li className="nav-item active">
+          <Link className="nav-link" to="/sproviders">
+            <i className="fas fa-fw fa-concierge-bell" />
+            Service Providers
+          </Link>
+        </li>
         {/* Divider */}
         <hr className="sidebar-divider" />
         {/* Heading */}
@@ -46,7 +53,7 @@ export default function SideBar() {
             aria-controls="collapseTwo"
           >
             <i className="fas fa-fw fa-cog" />
-            <span>Components</span>
+            <span>Settings</span>
           </a>
           <div
             id="collapseTwo"

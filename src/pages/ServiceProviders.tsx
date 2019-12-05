@@ -10,7 +10,7 @@ interface SingleProps {
 }
 
 const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
-  let { name, body, mediaitems } = provider;
+  let { name, body, mediaitems, description } = provider;
   const Markdown = require("react-markdown");
   return (
     <>
@@ -27,6 +27,7 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
             </div>
           ))}
         <h1>{name}</h1>
+        <p>{description}</p>
 
         <Markdown source={body} />
       </div>
@@ -38,7 +39,7 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
 export default function Sproviders() {
   const context = useContext(AppCtxt);
 
-  const { loading, error, data } = useQuery(GET_SPROVIDERS, {
+  const { loading, error, data, refetch } = useQuery(GET_SPROVIDERS, {
     variables: QUERY_INITS.getSproviders
   });
 
@@ -51,6 +52,10 @@ export default function Sproviders() {
       ]
     }
   );
+
+  React.useEffect(() => {
+    refetch();
+  });
 
   const [localState, setLocalState] = useState({
     show_archived: false
