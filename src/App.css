@@ -65,3 +65,7 @@
 .cover-area img {
   max-height: 250px;
 }
+
+.max100 {
+  max-width: 100%;
+}

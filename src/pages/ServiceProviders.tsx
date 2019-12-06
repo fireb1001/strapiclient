@@ -1,37 +1,95 @@
 import React, { useContext, useState } from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
-import { GET_SPROVIDERS, UPDATE_MEDIAITEMS, QUERY_INITS } from "../graphql";
+import { UPDATE_MEDIAITEMS, QUERY_INITS } from "../graphql";
 import { FormCheck, Image } from "react-bootstrap";
 import AddSprovider from "../components/AddSprovider";
 import { AppCtxt } from "../ctx";
+import { readableTime } from "../common/functions";
+import { GET_SPROVIDERS, UPDATE_SPROVIDER } from "../graphql/sproviders";
+import { Link } from "react-router-dom";
+import DropdownSider from "../components/DropdownSider";
+import { DELETE_SPROVIDER } from "./../graphql/sproviders";
 
 interface SingleProps {
   provider: any;
 }
 
 const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
-  let { name, body, mediaitems, description } = provider;
+  let {
+    id,
+    name,
+    body,
+    mediaitems,
+    description,
+    archived,
+    extras,
+    createdAt,
+    updatedAt
+  } = provider;
   const Markdown = require("react-markdown");
+
+  const [deleteSprovider] = useMutation(DELETE_SPROVIDER, {
+    refetchQueries: [
+      { query: GET_SPROVIDERS, variables: QUERY_INITS.getSproviders }
+    ]
+  });
+
+  const [updateSprovider] = useMutation(UPDATE_SPROVIDER, {
+    refetchQueries: [
+      { query: GET_SPROVIDERS, variables: QUERY_INITS.getSproviders }
+    ]
+  });
+
   return (
     <>
-      <div>
-        {mediaitems.length > 0 &&
-          mediaitems.map((item: any) => (
-            <div className="item" key={item.id}>
-              <Image
-                src={`http://localhost:1337${item.media.url}`}
-                width="200"
-                roundedCircle
-                alt={item.alt}
-              />
+      <div className="card m-2 p-3 pr-5">
+        <div className="row" style={{ direction: "rtl", textAlign: "right" }}>
+          <div className="col-2">
+            {mediaitems.length > 0 &&
+              mediaitems.map((item: any) => (
+                <div className="item" key={item.id}>
+                  <Image
+                    src={`http://localhost:1337${item.media.url}`}
+                    width="200"
+                    className="max100"
+                    roundedCircle
+                    alt={item.alt}
+                  />
+                </div>
+              ))}
+          </div>
+          <div className="col-9">
+            <Link className="d-link" to={``}>
+              <h3 className="">{name}</h3> {" " + archived}
+            </Link>
+            <p>{description}</p>
+            <div>
+              <span className="post-time">{readableTime(createdAt)}</span>
+              <span className="post-time text-gray-500">
+                Updated:{readableTime(updatedAt)}
+              </span>
             </div>
-          ))}
-        <h1>{name}</h1>
-        <p>{description}</p>
-
-        <Markdown source={body} />
+            <Markdown source={body} />
+          </div>
+          <DropdownSider
+            actionClicked={async () => {
+              if (archived !== true) {
+                updateSprovider({
+                  variables: { id: id, data: { archived: true } }
+                });
+              } else if (archived === true) {
+                deleteSprovider({ variables: { id: id } });
+              }
+            }}
+            dropItems={[
+              {
+                index: 0,
+                label: archived === true ? " Delete " : "Archive "
+              }
+            ]}
+          />
+        </div>
       </div>
-      <hr />
     </>
   );
 };
@@ -90,6 +148,8 @@ export default function Sproviders() {
           </React.Fragment>
         ))}
       <AddSprovider />
+      <br />
+      <br />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useMemo } from "react";
+import React, { useEffect, useContext } from "react";
 import { AppCtxt } from "../ctx";
 import { QUERY_INITS } from "../graphql";
 import { useQuery, useMutation } from "@apollo/react-hooks";
@@ -11,7 +11,8 @@ import {
   UPDATE_ARTICLE,
   DELETE_ARTICLE
 } from "../graphql/articles";
-import { Dropdown, FormCheck } from "react-bootstrap";
+import { FormCheck } from "react-bootstrap";
+import DropdownSider from "../components/DropdownSider";
 
 interface SingleArticleProps {
   article: Article;
@@ -21,6 +22,7 @@ const SingleArticle: React.FC<SingleArticleProps> = ({
   article
 }: SingleArticleProps) => {
   const { site } = useContext(AppCtxt);
+
   const [updateArticle] = useMutation(UPDATE_ARTICLE, {
     refetchQueries: [
       { query: GET_ARTICLES, variables: { where: { site: site.id } } }
@@ -32,6 +34,7 @@ const SingleArticle: React.FC<SingleArticleProps> = ({
       { query: GET_ARTICLES, variables: { where: { site: site.id } } }
     ]
   });
+
   return (
     <>
       <div className="card m-2 p-3 pr-5">
@@ -62,34 +65,26 @@ const SingleArticle: React.FC<SingleArticleProps> = ({
             </p>
           </div>
 
-          <Dropdown as="span" className="col-1">
-            <Dropdown.Toggle
-              variant="success"
-              id="dropdown-basic"
-            ></Dropdown.Toggle>
-
-            <Dropdown.Menu>
-              <Dropdown.Item
-                onClick={async () => {
-                  if (article.published)
-                    updateArticle({
-                      variables: { id: article.id, data: { published: false } }
-                    });
-                  else if (!article.published)
-                    deleteArticle({
-                      variables: {
-                        id: article.id
-                      }
-                    });
-                }}
-              >
-                {article.published && "Un Publish"}
-                {!article.published && "Delete"}
-              </Dropdown.Item>
-              <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-              <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+          <DropdownSider
+            actionClicked={async () => {
+              if (article.published)
+                updateArticle({
+                  variables: { id: article.id, data: { published: false } }
+                });
+              else if (!article.published)
+                deleteArticle({
+                  variables: {
+                    id: article.id
+                  }
+                });
+            }}
+            dropItems={[
+              {
+                index: 0,
+                label: article.published ? "Un Publish " : "Delete "
+              }
+            ]}
+          />
         </div>
       </div>
     </>
@@ -115,7 +110,7 @@ export default function Articles() {
   useEffect(() => {
     setShowArchived(show_archived);
     refetch();
-  });
+  }, [show_archived]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
