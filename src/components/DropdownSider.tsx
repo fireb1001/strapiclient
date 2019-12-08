@@ -1,5 +1,6 @@
 import React from "react";
 import { Dropdown } from "react-bootstrap";
+import { DropItem } from "../common/types";
 
 export default function DropdownSider({ actionClicked, dropItems }: any) {
   return (
@@ -11,15 +12,23 @@ export default function DropdownSider({ actionClicked, dropItems }: any) {
         ></Dropdown.Toggle>
 
         <Dropdown.Menu>
-          <Dropdown.Item onClick={actionClicked}>
-            {dropItems[0].label}
-            {/*article.published && "Un Publish"}
-            {!article.published && "Delete"*/}
-          </Dropdown.Item>
-          <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-          <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+          {dropItems &&
+            dropItems.map((item: DropItem) => (
+              <Dropdown.Item
+                key={item.action}
+                onClick={(e: any) => actionClicked(item.action)}
+              >
+                {item.label}
+              </Dropdown.Item>
+            ))}
         </Dropdown.Menu>
       </Dropdown>
     </>
   );
+}
+
+{
+  /*article.published && "Un Publish"}
+<Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+{!article.published && "Delete"*/
 }

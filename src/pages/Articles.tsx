@@ -66,21 +66,24 @@ const SingleArticle: React.FC<SingleArticleProps> = ({
           </div>
 
           <DropdownSider
-            actionClicked={async () => {
-              if (article.published)
-                updateArticle({
-                  variables: { id: article.id, data: { published: false } }
-                });
-              else if (!article.published)
-                deleteArticle({
-                  variables: {
-                    id: article.id
-                  }
-                });
+            actionClicked={async (action: string) => {
+              console.log(action);
+              if (action === "toggArchive") {
+                if (article.published)
+                  updateArticle({
+                    variables: { id: article.id, data: { published: false } }
+                  });
+                else if (!article.published)
+                  deleteArticle({
+                    variables: {
+                      id: article.id
+                    }
+                  });
+              }
             }}
             dropItems={[
               {
-                index: 0,
+                action: "toggArchive",
                 label: article.published ? "Un Publish " : "Delete "
               }
             ]}

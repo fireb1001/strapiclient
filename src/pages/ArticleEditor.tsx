@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
-import { Article } from "../common/types";
+import { Article, RouterProps } from "../common/types";
 import { readableTime } from "../common/functions";
 import ContentEditable from "react-contenteditable";
 import { GET_ARTICLE, UPDATE_ARTICLE } from "../graphql/articles";
@@ -10,52 +10,11 @@ import SuggestKeywords from "../components/SuggestKeywords";
 import { AppCtxt } from "../ctx";
 // @ts-ignore
 import draftToMarkdown from "draftjs-to-markdown";
-import { History } from "history";
-
-interface RouterProps {
-  match: any;
-  history: History;
-}
+import CoverArea from "../components/CoverArea";
+import EdTextArea from "../components/EdTextArea";
+import { customConvertMd } from "../common/editor-functions";
 
 type Props = RouterProps;
-
-const CoverArea = ({ src, onSetImage }: any) => {
-  const [localSrc, setLocalSrc] = React.useState(src);
-  return (
-    <>
-      <div className="cover-area">
-        {localSrc && <img src={localSrc} alt="" style={{ maxWidth: "100%" }} />}
-        <h6>Cover :</h6>
-        <ContentEditable
-          html={localSrc}
-          onChange={e => {
-            setLocalSrc(e.target.value);
-            onSetImage(e.target.value);
-          }}
-        />
-      </div>
-    </>
-  );
-};
-
-const EdTextArea = ({ text, onSetText }: any) => {
-  const [localText, setLocalText] = React.useState(text);
-  return (
-    <>
-      <div className="edtext-area">
-        <ContentEditable
-          className="editable-line"
-          html={localText}
-          onChange={e => {
-            let textValue = e.target.value;
-            setLocalText(textValue);
-            onSetText(textValue);
-          }}
-        />
-      </div>
-    </>
-  );
-};
 
 export default function ArticleEditor({ match, history }: Props) {
   const { loading, error, data } = useQuery(GET_ARTICLE, {
@@ -81,20 +40,7 @@ export default function ArticleEditor({ match, history }: Props) {
         data: {
           title: title.trim(),
           rawcontent: rawEditorState,
-          content: draftToMarkdown(
-            rawEditorState,
-            {},
-            (entity: any, text: string) => {
-              if (text) console.log(entity, text);
-              if (entity.type === "IMAGE") {
-                return `{{< figure src="${entity.data.src}" alt="${entity.data.alt}" caption="${entity.data.caption}" position="center" >}}`;
-              }
-              if (entity.type === "LINK") {
-                return ` [${text}](${entity.data.url})`;
-              }
-            },
-            {}
-          ),
+          content: draftToMarkdown(rawEditorState, {}, customConvertMd, {}),
           published: articleData.published,
           extras: articleData.extras,
           description: articleData.description
@@ -105,10 +51,7 @@ export default function ArticleEditor({ match, history }: Props) {
     history.goBack();
   };
 
-  const goBack = () => {
-    console.log("goBack Pressed");
-    history.push("/");
-  };
+  const goBack = () => history.push("/");
 
   React.useMemo(() => {
     if (data && data.article) {
@@ -117,7 +60,6 @@ export default function ArticleEditor({ match, history }: Props) {
 
       if (article.rawcontent) {
         setRawEditorState(data.article.rawcontent);
-        //setEditorState(EditorState.createWithContent(rawContent));
       }
       setArticleData({
         extras: article.extras,
@@ -139,6 +81,8 @@ export default function ArticleEditor({ match, history }: Props) {
   if (data) {
     // Types with object destructuring
     let { article }: { article: Article } = data;
+    let cover =
+      article.extras && article.extras.cover ? article.extras.cover : "";
     return (
       <>
         <div className="rtl-area">
@@ -154,11 +98,7 @@ export default function ArticleEditor({ match, history }: Props) {
         <div className="row">
           <div className="col-6">
             <CoverArea
-              src={
-                article.extras && article.extras.cover
-                  ? article.extras.cover
-                  : ""
-              }
+              src={cover}
               onSetImage={(image: string) => {
                 setArticleData({
                   ...articleData,
@@ -174,7 +114,6 @@ export default function ArticleEditor({ match, history }: Props) {
                 let trimmed = newText
                   .replace(/&nbsp;/gi, "")
                   .replace(/<br>/gi, "");
-
                 setArticleData({ ...articleData, description: trimmed });
               }}
             />

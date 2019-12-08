@@ -17,6 +17,16 @@ export const KEY_COMMANDS = {
   CTRL_PAGEDOWN: "CTRL_PAGEDOWN"
 };
 
+export function customConvertMd(entity: any, text: string) {
+  if (text) console.log(entity, text);
+  if (entity.type === "IMAGE") {
+    return `{{< figure src="${entity.data.src}" alt="${entity.data.alt}" caption="${entity.data.caption}" position="center" >}}`;
+  }
+  if (entity.type === "LINK") {
+    return ` [${text}](${entity.data.url})`;
+  }
+}
+
 export function myKeyBindingFn(e: any): string {
   let AltCrtlPressed =
     e.getModifierState("Alt") && e.getModifierState("Control");

@@ -9,24 +9,14 @@ import { GET_SPROVIDERS, UPDATE_SPROVIDER } from "../graphql/sproviders";
 import { Link } from "react-router-dom";
 import DropdownSider from "../components/DropdownSider";
 import { DELETE_SPROVIDER } from "./../graphql/sproviders";
+import { Sprovider } from "../common/types";
 
 interface SingleProps {
-  provider: any;
+  provider: Sprovider;
 }
 
 const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
-  let {
-    id,
-    name,
-    body,
-    mediaitems,
-    description,
-    archived,
-    extras,
-    createdAt,
-    updatedAt
-  } = provider;
-  const Markdown = require("react-markdown");
+  //const Markdown = require("react-markdown");
 
   const [deleteSprovider] = useMutation(DELETE_SPROVIDER, {
     refetchQueries: [
@@ -45,8 +35,8 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
       <div className="card m-2 p-3 pr-5">
         <div className="row" style={{ direction: "rtl", textAlign: "right" }}>
           <div className="col-2">
-            {mediaitems.length > 0 &&
-              mediaitems.map((item: any) => (
+            {provider.mediaitems.length > 0 &&
+              provider.mediaitems.map((item: any) => (
                 <div className="item" key={item.id}>
                   <Image
                     src={`http://localhost:1337${item.media.url}`}
@@ -59,32 +49,45 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
               ))}
           </div>
           <div className="col-9">
-            <Link className="d-link" to={``}>
-              <h3 className="">{name}</h3> {" " + archived}
+            <Link className="d-link" to={`/sprovider_editor/${provider.id}`}>
+              <h3 className="">{provider.name}</h3> {" " + provider.archived}
             </Link>
-            <p>{description}</p>
+            <p>{provider.description}</p>
+            <p>{JSON.stringify(provider.sites)}</p>
             <div>
-              <span className="post-time">{readableTime(createdAt)}</span>
+              <span className="post-time">
+                {readableTime(provider.createdAt)}
+              </span>
               <span className="post-time text-gray-500">
-                Updated:{readableTime(updatedAt)}
+                Updated:{readableTime(provider.updatedAt)}
               </span>
             </div>
-            <Markdown source={body} />
+            {/*  <Markdown source={body} /> */}
           </div>
           <DropdownSider
-            actionClicked={async () => {
-              if (archived !== true) {
+            actionClicked={async (action: string) => {
+              if (action === "toggArchive") {
+                if (provider.archived !== true) {
+                  updateSprovider({
+                    variables: { id: provider.id, data: { archived: true } }
+                  });
+                } else if (provider.archived === true) {
+                  deleteSprovider({ variables: { id: provider.id } });
+                }
+              } else if (action === "publish") {
                 updateSprovider({
-                  variables: { id: id, data: { archived: true } }
+                  variables: { id: provider.id, data: { archived: false } }
                 });
-              } else if (archived === true) {
-                deleteSprovider({ variables: { id: id } });
               }
             }}
             dropItems={[
               {
-                index: 0,
-                label: archived === true ? " Delete " : "Archive "
+                action: "toggArchive",
+                label: provider.archived === true ? " Delete " : "Archive "
+              },
+              {
+                action: "publish",
+                label: "Publish "
               }
             ]}
           />
@@ -137,7 +140,7 @@ export default function Sproviders() {
         checked={localState.show_archived}
       />
       {data.sproviders &&
-        data.sproviders.map((provider: any) => (
+        data.sproviders.map((provider: Sprovider) => (
           <React.Fragment key={provider.id}>
             {localState.show_archived && provider.archived && (
               <SingleProvider provider={provider} />
