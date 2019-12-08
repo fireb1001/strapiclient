@@ -25,6 +25,8 @@ export type Sprovider = {
   extras: any;
   sites: [Site];
   mediaitems: [any];
+  rawcontent: string;
+  content: string;
   createdAt: Date;
   updatedAt: Date;
 };

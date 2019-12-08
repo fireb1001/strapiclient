@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useContext } from "react";
 import { useQuery, useMutation, useLazyQuery } from "@apollo/react-hooks";
 import { NEILPATEL_URL, MAP_CONTEXT_ACTIONS } from "../AppConstants";
 import { CREATE_KEYWORD, DELETE_KEYWORD } from "../graphql/keywords";
-import { Site, keyword, Article } from "../common/types";
+import { Site, keyword, Article, Sprovider } from "../common/types";
 import { CustomEditor } from "../components/CustomEditor";
 import { GET_SITES, UPDATE_SITE, GET_SITE } from "../graphql/sites";
 import { CREATE_ARTICLE, GET_ARTICLES } from "../graphql/articles";
@@ -10,6 +10,8 @@ import { useHistory, Link } from "react-router-dom";
 import { AppCtxt } from "../ctx";
 import { callClient } from "../ApolloProvider";
 import { convertFromRaw } from "draft-js";
+import { GET_SPROVIDERS } from "../graphql/sproviders";
+import { QUERY_INITS } from "../graphql";
 
 interface SingleSiteProps {
   site: Site;
@@ -131,9 +133,10 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                 } = await callClient(GET_SITE, {
                   id: site.id
                 });
-                console.log(settings);
-                let fs_articles = articles.map((article: Article) => ({
+
+                let fs_posts = articles.map((article: Article) => ({
                   title: article.title,
+                  type: "post",
                   body: `+++
 title= "${article.title}"
 cover= "${article.extras && article.extras.cover ? article.extras.cover : ""}"
@@ -144,18 +147,56 @@ ${article.description ? article.description : ""}
 """
 +++
 ${article.content}
-                  `
+`
                 }));
 
                 // hide posts page from site map
-                fs_articles.push({
+                fs_posts.push({
                   title: "_index",
+                  type: "post",
                   body: JSON.stringify({ private: true })
                 });
-                console.log(fs_articles);
+
+                // Adding sprovider custom posts.
+                let { sproviders } = await callClient(
+                  GET_SPROVIDERS,
+                  QUERY_INITS.getSproviders
+                );
+                let fs_providers = sproviders.map((sprovider: Sprovider) => ({
+                  title: sprovider.name,
+                  type: "sprovider",
+                  body: `+++
+title= "${sprovider.name}"
+cover= "${
+                    sprovider.extras && sprovider.extras.cover
+                      ? sprovider.extras.cover
+                      : ""
+                  }"
+author= "مؤمن"
+date= ${sprovider.createdAt}
+type= "sprovider"
+layout= "sprovider_ly"
+description= """
+${sprovider.description ? sprovider.description : ""}
+"""
++++
+${sprovider.content}
+`
+                }));
+                fs_posts.push(...fs_providers);
+
+                fs_posts.push({
+                  title: "_index",
+                  type: "sprovider",
+                  body: JSON.stringify({
+                    description: "مقدمي خدمات ايجار المعدات",
+                    title: "صفحة مقدمي الخدمات"
+                  })
+                });
+
                 if (ipcRenderer) {
                   let res = await ipcRenderer.invoke("write-files", {
-                    articles: fs_articles,
+                    posts: fs_posts,
                     path:
                       settings.devUse && settings.devUse.local_path
                         ? settings.devUse.local_path

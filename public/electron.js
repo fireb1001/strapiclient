@@ -141,9 +141,16 @@ ipcMain.handle("write-files", async (event, data) => {
 
   if (fse.existsSync(`${data.path}\\content\\post`)) {
     let done = await fse.emptyDir(`${data.path}\\content\\post`);
-    console.log("remove content done " + done);
+    console.log("remove content post done " + done);
   } else {
     await fse.mkdir(`${data.path}\\content\\post`);
+  }
+
+  if (fse.existsSync(`${data.path}\\content\\sprovider`)) {
+    let done = await fse.emptyDir(`${data.path}\\content\\sprovider`);
+    console.log("remove content sprovider done " + done);
+  } else {
+    await fse.mkdir(`${data.path}\\content\\sprovider`);
   }
 
   // Write site config file if config changed
@@ -153,10 +160,10 @@ ipcMain.handle("write-files", async (event, data) => {
   );
 
   await Promise.all(
-    data.articles.map(async article => {
+    data.posts.map(async post => {
       fse.writeFileSync(
-        `${data.path}\\content\\post\\${article.title}.md`,
-        article.body
+        `${data.path}\\content\\${post.type}\\${post.title}.md`,
+        post.body
       );
     })
   );

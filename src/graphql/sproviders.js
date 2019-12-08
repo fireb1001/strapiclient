@@ -5,9 +5,12 @@ const FULL_QUERY = `{
   name
   description
   archived
+  extras
   website
   createdAt
   updatedAt
+  content
+  rawcontent
   sites {
     id
     name
