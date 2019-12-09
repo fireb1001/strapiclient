@@ -35,7 +35,7 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
       <div className="card m-2 p-3 pr-5">
         <div className="row" style={{ direction: "rtl", textAlign: "right" }}>
           <div className="col-2">
-            {provider.mediaitems.length > 0 &&
+            {/* provider.mediaitems.length > 0 &&
               provider.mediaitems.map((item: any) => (
                 <div className="item" key={item.id}>
                   <Image
@@ -46,7 +46,15 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
                     alt={item.alt}
                   />
                 </div>
-              ))}
+              )) */}
+            {provider.extras && provider.extras.cover && (
+              <img
+                className="card-img3"
+                src={provider.extras.cover}
+                alt="Card image cap"
+                style={{ maxWidth: "100%" }}
+              />
+            )}
           </div>
           <div className="col-9">
             <Link className="d-link" to={`/sprovider_editor/${provider.id}`}>
@@ -103,7 +111,7 @@ export default function Sproviders() {
   const { loading, error, data, refetch } = useQuery(GET_SPROVIDERS, {
     variables: QUERY_INITS.getSproviders
   });
-
+  /*
   const [updateMedia, { error: mutationError }] = useMutation(
     UPDATE_MEDIAITEMS,
     {
@@ -113,6 +121,7 @@ export default function Sproviders() {
       ]
     }
   );
+  */
 
   React.useEffect(() => {
     refetch();
@@ -127,9 +136,6 @@ export default function Sproviders() {
 
   return (
     <>
-      {mutationError && (
-        <p>Error :( Please try again {mutationError.message}</p>
-      )}
       <FormCheck
         type="switch"
         label="Show Only Archived"

@@ -30,6 +30,7 @@ import { AppCtxt } from "../ctx";
 interface CustomEditorProps {
   rawContent?: any;
   handleUpdateRaw: (state: any) => void;
+  className?: any;
 }
 
 enum EDIT_MODES {
@@ -519,7 +520,7 @@ export function CustomEditor(props: CustomEditorProps) {
   }
 
   return (
-    <>
+    <div className={props.className}>
       <EditorModal
         show={showEditorModal}
         onValue={value => setImageData(value)}
@@ -616,6 +617,6 @@ export function CustomEditor(props: CustomEditorProps) {
       >
         Focus
       </span>
-    </>
+    </div>
   );
 }

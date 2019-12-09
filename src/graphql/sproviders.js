@@ -6,7 +6,6 @@ const FULL_QUERY = `{
   description
   archived
   extras
-  website
   createdAt
   updatedAt
   content

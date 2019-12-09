@@ -40,8 +40,9 @@
   background-color: white;
   padding: 1em;
 }
+
 .current-block {
-  background-color: azure;
+  background-color: #feffcb;
 }
 
 .draftblock-image {
@@ -83,4 +84,11 @@
   padding: 1rem;
   direction: rtl;
   text-align: right;
+}
+
+.white-editor {
+  background-color: white;
+  width: 80%;
+  margin: 1em auto;
+  padding: 0.5em 2em;
 }

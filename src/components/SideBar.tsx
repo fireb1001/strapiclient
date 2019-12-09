@@ -1,6 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import $ from "jquery";
+import graphqlLogo from "../common/svg/GraphQL.svg";
+import dashboardIcon from "../common/svg/dashboardIcon.svg";
+import sellProduct from "../common/svg/sellProduct.svg";
 
 export default function SideBar() {
   return (
@@ -16,7 +19,7 @@ export default function SideBar() {
           href="index.html"
         >
           <div className="sidebar-brand-icon rotate-n-15">
-            <i className="fas fa-laugh-wink" />
+            <img src={graphqlLogo} alt="" style={{ width: "2em" }} />
           </div>
           <div className="sidebar-brand-text mx-3">
             Graphy Biz <sup>1</sup>
@@ -27,7 +30,7 @@ export default function SideBar() {
         {/* Nav Item - Dashboard */}
         <li className="nav-item active">
           <Link className="nav-link" to="/">
-            <i className="fas fa-fw fa-tachometer-alt" />
+            <img src={dashboardIcon} alt="" style={{ width: "1.2em" }} />{" "}
             Dashboard
           </Link>
         </li>
@@ -38,6 +41,13 @@ export default function SideBar() {
             Service Providers
           </Link>
         </li>
+
+        <li className="nav-item active">
+          <Link className="nav-link" to="/services">
+            <img src={sellProduct} alt="" style={{ width: "1.2em" }} /> Services
+          </Link>
+        </li>
+
         {/* Divider */}
         <hr className="sidebar-divider" />
         {/* Heading */}
@@ -45,7 +55,7 @@ export default function SideBar() {
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
           <a
-            className="nav-link collapsed"
+            className="nav-link "
             href="#"
             data-toggle="collapse"
             data-target="#collapseTwo"
@@ -57,7 +67,7 @@ export default function SideBar() {
           </a>
           <div
             id="collapseTwo"
-            className="collapse"
+            className="collapse show"
             aria-labelledby="headingTwo"
             data-parent="#accordionSidebar"
           >

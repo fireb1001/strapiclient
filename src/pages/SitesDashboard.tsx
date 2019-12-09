@@ -89,7 +89,7 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
               onClick={e => {
                 e.preventDefault();
                 let site_settings = site.settings;
-                if (site.settings["params"] && rawEditorState) {
+                if (site.settings["params"]) {
                   // console.log(contentState);
                   site_settings = {
                     ...site.settings,
@@ -97,8 +97,28 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                       ...site.settings["params"],
                       //@ts-ignore
                       subtitle: convertFromRaw(rawEditorState).getPlainText()
+                    },
+                    menu: {
+                      main: [
+                        {
+                          identifier: "about",
+                          name: "من نحن",
+                          url: "/about"
+                        },
+                        {
+                          identifier: "sproviders",
+                          name: "اماكن الإيجار",
+                          url: "/sprovider"
+                        },
+                        {
+                          identifier: "wholesaleplaces",
+                          name: "اماكن بيع الجملة",
+                          url: "https://wholesaleplaces.online/"
+                        }
+                      ]
                     }
                   };
+                  console.log(site_settings);
                 }
 
                 updateSite({

@@ -10,6 +10,7 @@ import { CustomEditor } from "../components/CustomEditor";
 // @ts-ignore
 import draftToMarkdown from "draftjs-to-markdown";
 import { customConvertMd } from "../common/editor-functions";
+import { InputGroup, FormControl } from "react-bootstrap";
 
 type Props = RouterProps;
 
@@ -31,8 +32,21 @@ export default function SProviderEditor({ match, history }: Props) {
   );
   const [rawEditorState, setRawEditorState] = React.useState({});
 
+  const setSproviderExtra = (input: any) => {
+    if (sprovider)
+      setSprovider({
+        ...sprovider,
+        extras: Object.assign(sprovider.extras, input)
+      });
+  };
+
   React.useEffect(() => {
-    if (data && data.sprovider) setSprovider(data.sprovider);
+    if (data && data.sprovider) {
+      data.sprovider.extras = data.sprovider.extras
+        ? data.sprovider.extras
+        : {};
+      setSprovider(data.sprovider);
+    }
   }, [data]);
 
   if (loading) return <p>Loading...</p>;
@@ -64,10 +78,7 @@ export default function SProviderEditor({ match, history }: Props) {
                       : ""
                   }
                   onSetImage={(image: string) => {
-                    setSprovider({
-                      ...sprovider,
-                      extras: { ...sprovider.extras, cover: image }
-                    });
+                    setSproviderExtra({ cover: image });
                   }}
                 />
               </div>
@@ -84,9 +95,28 @@ export default function SProviderEditor({ match, history }: Props) {
               </div>
             </div>
             <hr />
+            <label htmlFor="basic-url">Your vanity URL</label>
+            <InputGroup className="mb-3" style={{ direction: "ltr" }}>
+              <InputGroup.Prepend>
+                <InputGroup.Text id="basic-addon3">
+                  https://facebook.com/
+                </InputGroup.Text>
+              </InputGroup.Prepend>
+              <FormControl
+                id="basic-url"
+                value={sprovider.extras.facebookPage || ""}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setSproviderExtra({
+                    facebookPage: e.target.value
+                  });
+                }}
+              />
+            </InputGroup>
+            <hr />
             <div className=" editor-container ">
               <CustomEditor
                 rawContent={sprovider.rawcontent}
+                className="white-editor"
                 handleUpdateRaw={rawContent => {
                   setRawEditorState(rawContent);
                 }}

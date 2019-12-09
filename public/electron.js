@@ -137,6 +137,7 @@ ipcMain.on("open-kw-search", (event, data) => {
 
 ipcMain.handle("write-files", async (event, data) => {
   console.log("write-files", data.path);
+  console.log("data.settings", JSON.stringify(data.settings, null, 2));
   delete data.settings.devUse;
 
   if (fse.existsSync(`${data.path}\\content\\post`)) {
