@@ -2,6 +2,7 @@ import { gql } from "apollo-boost";
 
 export const QUERY_INITS = {
   getSproviders: { where: {} },
+  getCustomtypes: { where: {} },
   createArticle: { title: " " }
 };
 

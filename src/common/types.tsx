@@ -20,7 +20,7 @@ export declare interface RouterProps {
 export type Sprovider = {
   id: string;
   name: string;
-  archived: boolean;
+  published: boolean;
   description: string;
   extras: any;
   sites: [Site];
@@ -29,6 +29,19 @@ export type Sprovider = {
   content: string;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type Customtype = {
+  id: string;
+  title: string;
+  content: string;
+  type: "service" | "product" | "locatio";
+  extras: any;
+  description: string;
+  rawcontent: string;
+  createdAt: Date;
+  updatedAt: Date;
+  published: boolean;
 };
 
 export type keyword = {

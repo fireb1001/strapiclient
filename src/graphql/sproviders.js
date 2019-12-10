@@ -4,7 +4,7 @@ const FULL_QUERY = `{
   id
   name
   description
-  archived
+  published
   extras
   createdAt
   updatedAt

@@ -1,6 +1,7 @@
 const electron = require("electron");
 const ipcMain = electron.ipcMain;
 const app = electron.app;
+const shell = electron.shell;
 const BrowserWindow = electron.BrowserWindow;
 const BrowserView = electron.BrowserView;
 const Tray = electron.Tray;
@@ -133,6 +134,12 @@ ipcMain.on("open-kw-search", (event, data) => {
   let keyword = data.keyword ? data.keyword.replace(" ", "+") : "";
   kwSearchWindow.loadURL(`${data.url}${keyword}`);
   kwSearchWindow.show();
+});
+
+ipcMain.handle("open-external", async (event, data) => {
+  if (data && data.q)
+    shell.openExternal(`https://www.google.com/search?q=${data.q}`);
+  else if (data && data.url) shell.openExternal(data.url);
 });
 
 ipcMain.handle("write-files", async (event, data) => {

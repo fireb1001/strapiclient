@@ -43,7 +43,7 @@ export default function SideBar() {
         </li>
 
         <li className="nav-item active">
-          <Link className="nav-link" to="/services">
+          <Link className="nav-link" to="/customtypes">
             <img src={sellProduct} alt="" style={{ width: "1.2em" }} /> Services
           </Link>
         </li>

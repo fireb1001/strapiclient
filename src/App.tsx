@@ -13,6 +13,8 @@ import ArticleEditor from "./pages/ArticleEditor";
 import SiteSettings from "./pages/SiteSettings";
 import Dashboard from "./pages/Dashboard";
 import SProviderEditor from "./pages/SProviderEditor";
+import Customtypes from "./pages/Customtypes";
+import CustomtypeEditor from "./pages/CustomtypeEditor";
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -105,12 +107,17 @@ const App: React.FC = () => {
               )}
               <div className="container-fluid">
                 <Route path="/" exact component={Dashboard} />
-                <Route path="/sproviders" exact component={Sproviders} />
+                <Route path="/sproviders" component={Sproviders} />
+                <Route path="/customtypes" component={Customtypes} />
                 <Route path="/sites" component={SitesDashboard} />
                 <Route path="/article_editor/:id" component={ArticleEditor} />
                 <Route
                   path="/sprovider_editor/:id"
                   component={SProviderEditor}
+                />
+                <Route
+                  path="/customtype_editor/:id"
+                  component={CustomtypeEditor}
                 />
                 <Route
                   path="/site_settings/:site_id"

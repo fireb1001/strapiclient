@@ -67,7 +67,6 @@ const SingleArticle: React.FC<SingleArticleProps> = ({
 
           <DropdownSider
             actionClicked={async (action: string) => {
-              console.log(action);
               if (action === "toggArchive") {
                 if (article.published)
                   updateArticle({
@@ -79,12 +78,20 @@ const SingleArticle: React.FC<SingleArticleProps> = ({
                       id: article.id
                     }
                   });
+              } else if (action === "publish") {
+                updateArticle({
+                  variables: { id: article.id, data: { published: true } }
+                });
               }
             }}
             dropItems={[
               {
                 action: "toggArchive",
                 label: article.published ? "Un Publish " : "Delete "
+              },
+              {
+                action: "publish",
+                label: "Publish "
               }
             ]}
           />
@@ -134,7 +141,7 @@ export default function Articles() {
       {data.articles &&
         data.articles.map((article: Article) => (
           <React.Fragment key={article.id}>
-            {(article.published || article.published == undefined) &&
+            {(article.published || article.published === null) &&
               !showArchived && <SingleArticle article={article} />}
             {article.published === false && showArchived && (
               <SingleArticle article={article} />

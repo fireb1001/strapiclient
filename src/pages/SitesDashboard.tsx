@@ -12,6 +12,7 @@ import { callClient } from "../ApolloProvider";
 import { convertFromRaw } from "draft-js";
 import { GET_SPROVIDERS } from "../graphql/sproviders";
 import { QUERY_INITS } from "../graphql";
+import search from "../common/svg/search.svg";
 
 interface SingleSiteProps {
   site: Site;
@@ -254,6 +255,15 @@ ${sprovider.content}
                     {keyword.keyword}{" "}
                   </span>{" "}
                   ({keyword.volume}){" "}
+                  <span
+                    onClick={async () => {
+                      await ipcRenderer.invoke("open-external", {
+                        q: keyword.keyword
+                      });
+                    }}
+                  >
+                    <img src={search} alt="" style={{ width: "1em" }} />
+                  </span>{" "}
                   <i
                     className="text-danger fas fa-trash"
                     onClick={async () =>

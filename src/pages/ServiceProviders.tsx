@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
-import { UPDATE_MEDIAITEMS, QUERY_INITS } from "../graphql";
-import { FormCheck, Image } from "react-bootstrap";
+import { QUERY_INITS } from "../graphql";
+import { FormCheck } from "react-bootstrap";
 import AddSprovider from "../components/AddSprovider";
 import { AppCtxt } from "../ctx";
 import { readableTime } from "../common/functions";
@@ -17,6 +17,12 @@ interface SingleProps {
 
 const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
   //const Markdown = require("react-markdown");
+
+  let ipcRenderer: any;
+
+  if (window.process && window.process.versions.electron) {
+    ipcRenderer = window.require("electron").ipcRenderer;
+  }
 
   const [deleteSprovider] = useMutation(DELETE_SPROVIDER, {
     refetchQueries: [
@@ -58,8 +64,17 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
           </div>
           <div className="col-9">
             <Link className="d-link" to={`/sprovider_editor/${provider.id}`}>
-              <h3 className="">{provider.name}</h3> {" " + provider.archived}
+              <h3 className="">{provider.name}</h3> {" " + provider.published}
             </Link>
+            {provider.extras.facebookPage}
+            <i
+              className="text-primary fas fa-facebook"
+              onClick={async () => {
+                await ipcRenderer.invoke("open-external", {
+                  url: provider.extras.facebookPage
+                });
+              }}
+            />
             <p>{provider.description}</p>
             <p>{JSON.stringify(provider.sites)}</p>
             <div>
@@ -75,23 +90,23 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
           <DropdownSider
             actionClicked={async (action: string) => {
               if (action === "toggArchive") {
-                if (provider.archived !== true) {
+                if (provider.published) {
                   updateSprovider({
-                    variables: { id: provider.id, data: { archived: true } }
+                    variables: { id: provider.id, data: { published: false } }
                   });
-                } else if (provider.archived === true) {
+                } else if (!provider.published) {
                   deleteSprovider({ variables: { id: provider.id } });
                 }
               } else if (action === "publish") {
                 updateSprovider({
-                  variables: { id: provider.id, data: { archived: false } }
+                  variables: { id: provider.id, data: { published: true } }
                 });
               }
             }}
             dropItems={[
               {
                 action: "toggArchive",
-                label: provider.archived === true ? " Delete " : "Archive "
+                label: provider.published ? "Un Publish " : " Delete "
               },
               {
                 action: "publish",
@@ -148,12 +163,13 @@ export default function Sproviders() {
       {data.sproviders &&
         data.sproviders.map((provider: Sprovider) => (
           <React.Fragment key={provider.id}>
-            {localState.show_archived && provider.archived && (
+            {localState.show_archived && provider.published === false && (
               <SingleProvider provider={provider} />
             )}
-            {!localState.show_archived && !provider.archived && (
-              <SingleProvider provider={provider} />
-            )}
+            {!localState.show_archived &&
+              (provider.published || provider.published === null) && (
+                <SingleProvider provider={provider} />
+              )}
           </React.Fragment>
         ))}
       <AddSprovider />
