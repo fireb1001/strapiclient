@@ -147,6 +147,7 @@ ipcMain.handle("write-files", async (event, data) => {
   console.log("data.settings", JSON.stringify(data.settings, null, 2));
   delete data.settings.devUse;
 
+  // TODO dynamicly await promise all
   if (fse.existsSync(`${data.path}\\content\\post`)) {
     let done = await fse.emptyDir(`${data.path}\\content\\post`);
     console.log("remove content post done " + done);
@@ -159,6 +160,13 @@ ipcMain.handle("write-files", async (event, data) => {
     console.log("remove content sprovider done " + done);
   } else {
     await fse.mkdir(`${data.path}\\content\\sprovider`);
+  }
+
+  if (fse.existsSync(`${data.path}\\content\\service`)) {
+    let done = await fse.emptyDir(`${data.path}\\content\\service`);
+    console.log("remove content service done " + done);
+  } else {
+    await fse.mkdir(`${data.path}\\content\\service`);
   }
 
   // Write site config file if config changed

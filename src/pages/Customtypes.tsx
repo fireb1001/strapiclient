@@ -142,7 +142,7 @@ export default function Customtypes() {
         className="btn btn-primary"
         onClick={async () => {
           let newPost = await createCustomtype({
-            variables: { site: site.id, title: "New", type: "product" }
+            variables: { site: site.id, title: "New", type: "service" }
           });
           let post_id = newPost.data.createCustomtype.customtype.id;
           history.push(`/customtype_editor/${post_id}`);

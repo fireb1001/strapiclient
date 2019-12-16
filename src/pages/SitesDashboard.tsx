@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useContext } from "react";
 import { useQuery, useMutation, useLazyQuery } from "@apollo/react-hooks";
 import { NEILPATEL_URL, MAP_CONTEXT_ACTIONS } from "../AppConstants";
 import { CREATE_KEYWORD, DELETE_KEYWORD } from "../graphql/keywords";
-import { Site, keyword, Article, Sprovider } from "../common/types";
+import { Site, keyword, Article, Sprovider, Customtype } from "../common/types";
 import { CustomEditor } from "../components/CustomEditor";
 import { GET_SITES, UPDATE_SITE, GET_SITE } from "../graphql/sites";
 import { CREATE_ARTICLE, GET_ARTICLES } from "../graphql/articles";
@@ -11,8 +11,10 @@ import { AppCtxt } from "../ctx";
 import { callClient } from "../ApolloProvider";
 import { convertFromRaw } from "draft-js";
 import { GET_SPROVIDERS } from "../graphql/sproviders";
+import { GET_CUSTOMTYPES } from "../graphql/customtype";
 import { QUERY_INITS } from "../graphql";
 import search from "../common/svg/search.svg";
+import { mdFileBody } from "../common/functions";
 
 interface SingleSiteProps {
   site: Site;
@@ -90,6 +92,7 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
               onClick={e => {
                 e.preventDefault();
                 let site_settings = site.settings;
+                console.log(site_settings);
                 if (site.settings["params"]) {
                   // console.log(contentState);
                   site_settings = {
@@ -112,6 +115,11 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                           url: "/sprovider"
                         },
                         {
+                          identifier: "service",
+                          name: "الكاميرات",
+                          url: "/service"
+                        },
+                        {
                           identifier: "wholesaleplaces",
                           name: "اماكن بيع الجملة",
                           url: "https://wholesaleplaces.online/"
@@ -119,7 +127,6 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                       ]
                     }
                   };
-                  console.log(site_settings);
                 }
 
                 updateSite({
@@ -158,17 +165,14 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                 let fs_posts = articles.map((article: Article) => ({
                   title: article.title,
                   type: "post",
-                  body: `+++
-title= "${article.title}"
-cover= "${article.extras && article.extras.cover ? article.extras.cover : ""}"
-author= "مؤمن"
-date= ${article.createdAt}
-description= """
-${article.description ? article.description : ""}
-"""
-+++
-${article.content}
-`
+                  body: mdFileBody({
+                    ...article,
+                    cover:
+                      article.extras && article.extras.cover
+                        ? article.extras.cover
+                        : "",
+                    author: "مؤمن"
+                  })
                 }));
 
                 // hide posts page from site map
@@ -183,26 +187,21 @@ ${article.content}
                   GET_SPROVIDERS,
                   QUERY_INITS.getSproviders
                 );
+
                 let fs_providers = sproviders.map((sprovider: Sprovider) => ({
                   title: sprovider.name,
                   type: "sprovider",
-                  body: `+++
-title= "${sprovider.name}"
-cover= "${
-                    sprovider.extras && sprovider.extras.cover
-                      ? sprovider.extras.cover
-                      : ""
-                  }"
-author= "مؤمن"
-date= ${sprovider.createdAt}
-type= "sprovider"
-layout= "sprovider_ly"
-description= """
-${sprovider.description ? sprovider.description : ""}
-"""
-+++
-${sprovider.content}
-`
+                  body: mdFileBody({
+                    ...sprovider,
+                    title: sprovider.name,
+                    layout: "sprovider_ly",
+                    author: "مؤمن",
+                    cover:
+                      sprovider.extras && sprovider.extras.cover
+                        ? sprovider.extras.cover
+                        : "",
+                    type: "sprovider"
+                  })
                 }));
                 fs_posts.push(...fs_providers);
 
@@ -214,6 +213,28 @@ ${sprovider.content}
                     title: "صفحة مقدمي الخدمات"
                   })
                 });
+
+                // Adding custom posts.
+                let { customtypes } = await callClient(
+                  GET_CUSTOMTYPES,
+                  QUERY_INITS.getCustomtypes
+                );
+
+                let fs_customtypes = customtypes.map((custom: Customtype) => ({
+                  title: custom.title,
+                  type: custom.type,
+                  body: mdFileBody({
+                    ...custom,
+                    layout: custom.type + "_ly",
+                    author: "مؤمن",
+                    cover:
+                      custom.extras && custom.extras.cover
+                        ? custom.extras.cover
+                        : ""
+                  })
+                }));
+                console.log(fs_customtypes);
+                fs_posts.push(...fs_customtypes);
 
                 if (ipcRenderer) {
                   let res = await ipcRenderer.invoke("write-files", {

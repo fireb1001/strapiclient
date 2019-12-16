@@ -43,9 +43,9 @@ export default function CustomtypeEditor({ match, history }: Props) {
 
   React.useEffect(() => {
     if (data && data.customtype) {
-      data.customtype.extras = data.customtype.extras
-        ? data.customtype.extras
-        : {};
+      let { extras, rawcontent } = data.customtype;
+      data.customtype.extras = extras ? extras : {};
+      if (rawcontent) setRawEditorState(rawcontent);
       setCustomtype(data.customtype);
     }
   }, [data]);

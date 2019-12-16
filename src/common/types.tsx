@@ -64,6 +64,17 @@ export type Site = {
   handle: string;
 };
 
+export type MarkdownData = {
+  title: string;
+  cover: string;
+  author: "مؤمن";
+  createdAt: Date;
+  type?: string;
+  layout?: string;
+  description: string;
+  content: string;
+};
+
 export declare interface EditorProps {
   handleKeyCommand: any;
   keyBindingFn: any;

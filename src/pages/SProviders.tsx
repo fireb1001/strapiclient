@@ -8,7 +8,7 @@ import { readableTime } from "../common/functions";
 import { GET_SPROVIDERS, UPDATE_SPROVIDER } from "../graphql/sproviders";
 import { Link } from "react-router-dom";
 import DropdownSider from "../components/DropdownSider";
-import { DELETE_SPROVIDER } from "./../graphql/sproviders";
+import { DELETE_SPROVIDER } from "../graphql/sproviders";
 import { Sprovider } from "../common/types";
 
 interface SingleProps {
@@ -64,14 +64,13 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
           </div>
           <div className="col-9">
             <Link className="d-link" to={`/sprovider_editor/${provider.id}`}>
-              <h3 className="">{provider.name}</h3> {" " + provider.published}
+              <h3 className="">{provider.name}</h3>
             </Link>
-            {provider.extras.facebookPage}
             <i
-              className="text-primary fas fa-facebook"
+              className="text-primary fab fa-facebook"
               onClick={async () => {
                 await ipcRenderer.invoke("open-external", {
-                  url: provider.extras.facebookPage
+                  url: "https://facebook.com/" + provider.extras.facebookPage
                 });
               }}
             />
@@ -120,7 +119,7 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
   );
 };
 
-export default function Sproviders() {
+export default function SProviders() {
   const context = useContext(AppCtxt);
 
   const { loading, error, data, refetch } = useQuery(GET_SPROVIDERS, {

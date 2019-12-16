@@ -7,7 +7,7 @@ import { CtxtProvider } from "./ctx";
 import { WebviewTag } from "electron";
 import SideBar from "./components/SideBar";
 import SitesDashboard from "./pages/SitesDashboard";
-import Sproviders from "./pages/ServiceProviders";
+import SProviders from "./pages/SProviders";
 import { TopNavbar } from "./components/TopNavbar";
 import ArticleEditor from "./pages/ArticleEditor";
 import SiteSettings from "./pages/SiteSettings";
@@ -107,7 +107,7 @@ const App: React.FC = () => {
               )}
               <div className="container-fluid">
                 <Route path="/" exact component={Dashboard} />
-                <Route path="/sproviders" component={Sproviders} />
+                <Route path="/sproviders" component={SProviders} />
                 <Route path="/customtypes" component={Customtypes} />
                 <Route path="/sites" component={SitesDashboard} />
                 <Route path="/article_editor/:id" component={ArticleEditor} />

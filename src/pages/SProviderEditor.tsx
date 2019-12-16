@@ -42,9 +42,9 @@ export default function SProviderEditor({ match, history }: Props) {
 
   React.useEffect(() => {
     if (data && data.sprovider) {
-      data.sprovider.extras = data.sprovider.extras
-        ? data.sprovider.extras
-        : {};
+      let { extras, rawcontent } = data.sprovider;
+      data.sprovider.extras = extras ? extras : {};
+      if (rawcontent) setRawEditorState(rawcontent);
       setSprovider(data.sprovider);
     }
   }, [data]);
@@ -61,6 +61,7 @@ export default function SProviderEditor({ match, history }: Props) {
               <ContentEditable
                 html={sprovider.name}
                 onChange={e => {
+                  console.log(sprovider);
                   setSprovider({ ...sprovider, name: e.target.value });
                 }}
               />

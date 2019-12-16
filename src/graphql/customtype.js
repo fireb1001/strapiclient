@@ -3,6 +3,7 @@ import { gql } from "apollo-boost";
 const FULL_QUERY = `{
   id
   title
+  type
   description
   published
   extras
