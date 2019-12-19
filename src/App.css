@@ -45,6 +45,10 @@
   background-color: #feffcb;
 }
 
+.atomic-block {
+  background-color: #fa8d27;
+}
+
 .draftblock-image {
   max-width: 40%;
 }

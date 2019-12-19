@@ -237,6 +237,7 @@ const SingleSite: React.FC<SingleSiteProps> = ({ site }: SingleSiteProps) => {
                 fs_posts.push(...fs_customtypes);
 
                 if (ipcRenderer) {
+                  console.log("write to: ", settings.devUse.local_path)
                   let res = await ipcRenderer.invoke("write-files", {
                     posts: fs_posts,
                     path:

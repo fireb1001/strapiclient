@@ -23,9 +23,10 @@ import {
 // @ts-ignore
 import { getSelectionEntity } from "draftjs-utils";
 import linkSvg from "../common/svg/link.svg";
-import monkeySee from "../common/svg/monkeySee.svg";
-import { Popover, OverlayTrigger, Modal, Button } from "react-bootstrap";
+import { Modal, Button } from "react-bootstrap";
 import { AppCtxt } from "../ctx";
+import LinkComponent from "./editors/LinkComponent"
+import MediaModal from "./editors/MediaModal";
 
 interface CustomEditorProps {
   rawContent?: any;
@@ -38,143 +39,6 @@ enum EDIT_MODES {
   BLOCK = "BLOCK"
 }
 
-const Link = (props: any) => {
-  const { url } = props.contentState.getEntity(props.entityKey).getData();
-  const [popOver, setPopOver] = React.useState(false);
-
-  const togglePopOver = () => {
-    setPopOver(!popOver);
-  };
-
-  /* <span onMouseEnter={togglePopOver} onMouseLeave={togglePopOver}></span> */
-
-  const popoverComp = (
-    <Popover id="popover-basic">
-      <Popover.Content>
-        <div>
-          And here's some <strong>amazing</strong> content. It's very engaging.
-          right?{" "}
-          <img
-            src={linkSvg}
-            alt=""
-            style={{ width: "1.6em" }}
-            onClick={_ => console.log(url)}
-          />
-          <img
-            src={monkeySee}
-            alt=""
-            style={{ width: "1.4em" }}
-            onClick={_ => console.log(url)}
-          />
-        </div>
-      </Popover.Content>
-    </Popover>
-  );
-
-  return (
-    <>
-      {popOver && <></>}
-      <OverlayTrigger
-        trigger="click"
-        placement="top"
-        overlay={popoverComp}
-        rootClose
-      >
-        <a href={url}>{props.children}</a>
-      </OverlayTrigger>
-    </>
-  );
-};
-
-const InsertImage = (props: any) => {
-  let [imageData, setImageData] = React.useState(props.imageData);
-  // to solve Setting React Hooks states in a sync-like manner
-  React.useEffect(() => {
-    props.onValue(imageData);
-  }, [imageData]);
-
-  return (
-    <>
-      <div className="form-group">
-        <label>Source</label>
-        <input
-          type="text"
-          className="form-control"
-          value={imageData.src}
-          onChange={e => setImageData({ ...imageData, src: e.target.value })}
-        />
-      </div>
-      <div className="form-group">
-        <label>ALT</label>
-        <input
-          type="text"
-          className="form-control"
-          value={imageData.alt}
-          onChange={e => setImageData({ ...imageData, alt: e.target.value })}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Caption</label>
-        <input
-          type="text"
-          className="form-control"
-          value={imageData.caption}
-          onChange={e =>
-            setImageData({ ...imageData, caption: e.target.value })
-          }
-        />
-      </div>
-    </>
-  );
-};
-
-interface EditorModalProps {
-  show: boolean;
-  onToggle: (flag: boolean) => void;
-  onValue: (value: any) => void;
-  onSave: (imageData: any) => void;
-}
-
-function EditorModal(props: EditorModalProps) {
-  const { image_data } = React.useContext(AppCtxt);
-  let [internalImageData, setInternalImageData] = React.useState({});
-
-  return (
-    <Modal show={props.show} onHide={() => props.onToggle(false)}>
-      <Modal.Header closeButton>
-        <Modal.Title>Modal heading</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {JSON.stringify(image_data)}
-        <InsertImage
-          imageData={
-            image_data ? image_data : { src: "", alt: "", caption: "" }
-          }
-          onValue={(value: any) => {
-            props.onValue(value);
-            setInternalImageData(value);
-          }}
-        />
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={() => props.onToggle(false)}>
-          Close
-        </Button>
-        <Button
-          variant="primary"
-          onClick={() => {
-            props.onToggle(false);
-            console.log("internalImageData", internalImageData);
-            props.onSave(internalImageData);
-          }}
-        >
-          Save Changes
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  );
-}
 
 export function CustomEditor(props: CustomEditorProps) {
   const {
@@ -199,10 +63,24 @@ export function CustomEditor(props: CustomEditorProps) {
     setEditorRef(ref);
   };
 
+  function findLinkEntities(
+    contentBlock: any,
+    callback: any,
+    contentState: any
+  ) {
+    contentBlock.findEntityRanges((character: any) => {
+      const entityKey = character.getEntity();
+      return (
+        entityKey !== null &&
+        contentState.getEntity(entityKey).getType() === "LINK"
+      );
+    }, callback);
+  }
+
   const decorator = new CompositeDecorator([
     {
       strategy: findLinkEntities,
-      component: Link
+      component: LinkComponent
     }
   ]);
 
@@ -274,19 +152,7 @@ export function CustomEditor(props: CustomEditorProps) {
     }
   }, [suggest_kw]);
 
-  function findLinkEntities(
-    contentBlock: any,
-    callback: any,
-    contentState: any
-  ) {
-    contentBlock.findEntityRanges((character: any) => {
-      const entityKey = character.getEntity();
-      return (
-        entityKey !== null &&
-        contentState.getEntity(entityKey).getType() === "LINK"
-      );
-    }, callback);
-  }
+
 
   const handleKey = (command: any) => {
     let selection = editorState.getSelection();
@@ -515,13 +381,16 @@ export function CustomEditor(props: CustomEditorProps) {
 
   function myBlockStyleFn(contentBlock: ContentBlock) {
     const blockKey = editorState.getSelection().getAnchorKey();
+    if(contentBlock.getType() === 'atomic') return "atomic-block";
+
     if (blockKey === contentBlock.getKey()) return "every-block current-block";
     else return "every-block";
   }
 
   return (
     <div className={props.className}>
-      <EditorModal
+      {/* implementing media modal */}
+      <MediaModal
         show={showEditorModal}
         onValue={value => setImageData(value)}
         onToggle={(flag: boolean) => toggleShowMediaModal({ show: flag })}
@@ -569,6 +438,7 @@ export function CustomEditor(props: CustomEditorProps) {
           }
         }}
       />
+
       <Editor
         editorState={editorState}
         ref={setDomEditorRef}
@@ -597,7 +467,7 @@ export function CustomEditor(props: CustomEditorProps) {
       <img
         src={linkSvg}
         alt=""
-        style={{ width: "3em" }}
+        style={{ width: "2em" }}
         onClick={() => {
           toggleShowMediaModal({ show: true });
         }}
@@ -617,6 +487,28 @@ export function CustomEditor(props: CustomEditorProps) {
       >
         Focus
       </span>
+      <span onClick={() => {
+          const contentState = editorState.getCurrentContent();
+          const contentStateWithEntity = contentState.createEntity(
+            "Quote",
+            "MUTABLE",
+            { custom: "quote" }
+          );
+      
+          const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+          const newEditorState = EditorState.set(editorState, {
+            currentContent: contentStateWithEntity
+          });
+          //
+          setEditorState(
+            // its important to use whitespace
+            AtomicBlockUtils.insertAtomicBlock(
+              newEditorState,
+              entityKey,
+              " "
+            )
+          );
+        }}> Quote Block </span>
     </div>
   );
 }

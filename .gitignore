@@ -8,6 +8,7 @@
 # testing
 /coverage
 
+# just extract zipped vendor
 /public/vendor
 # production
 /build

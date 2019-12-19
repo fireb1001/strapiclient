@@ -5,6 +5,7 @@ import {
   ContentBlock
 } from "draft-js";
 import MediaComponent from "../components/MediaComponent";
+import SimpleQuote from "../components/editors/SimpleQuote";
 const { hasCommandModifier } = KeyBindingUtil;
 
 export const KEY_COMMANDS = {
@@ -18,13 +19,18 @@ export const KEY_COMMANDS = {
 };
 
 export function customConvertMd(entity: any, text: string) {
-  if (text) console.log(entity, text);
+  // Todo check when lose entity
+  if (text) {
+    console.log(entity, text);
+    return `@ ${text} @`;
+  }
   if (entity.type === "IMAGE") {
     return `{{< figure src="${entity.data.src}" alt="${entity.data.alt}" caption="${entity.data.caption}" position="center" >}}`;
   }
   if (entity.type === "LINK") {
     return ` [${text}](${entity.data.url})`;
   }
+
 }
 
 export function myKeyBindingFn(e: any): string {
@@ -110,10 +116,15 @@ export function moveBlock(
 
 export function myBlockRenderer(contentBlock: ContentBlock) {
   if (contentBlock.getType() === "atomic") {
+
     if (contentBlock.getEntityAt(0))
       return {
         component: MediaComponent
       };
+    // else it will be quote for now
+    else return {
+      component: SimpleQuote
+    }
   }
   return null;
 }
