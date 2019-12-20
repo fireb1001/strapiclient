@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Editor,
   EditorState,
@@ -12,21 +12,21 @@ import {
   genKey,
   ContentState,
   AtomicBlockUtils,
-  Modifier
-} from "draft-js";
+  Modifier,
+} from 'draft-js';
 import {
   myKeyBindingFn,
   KEY_COMMANDS,
   moveBlock,
-  myBlockRenderer
-} from "../common/editor-functions";
+  myBlockRenderer,
+} from '../common/editor-functions';
 // @ts-ignore
-import { getSelectionEntity } from "draftjs-utils";
-import linkSvg from "../common/svg/link.svg";
-import { Modal, Button } from "react-bootstrap";
-import { AppCtxt } from "../ctx";
-import LinkComponent from "./editors/LinkComponent"
-import MediaModal from "./editors/MediaModal";
+import { getSelectionEntity } from 'draftjs-utils';
+import linkSvg from '../common/svg/link.svg';
+import { Modal, Button } from 'react-bootstrap';
+import { AppCtxt } from '../ctx';
+import LinkComponent from './editors/LinkComponent';
+import MediaModal from './editors/MediaModal';
 
 interface CustomEditorProps {
   rawContent?: any;
@@ -35,24 +35,23 @@ interface CustomEditorProps {
 }
 
 enum EDIT_MODES {
-  DEFAULT = "DEFAULT",
-  BLOCK = "BLOCK"
+  DEFAULT = 'DEFAULT',
+  BLOCK = 'BLOCK',
 }
-
 
 export function CustomEditor(props: CustomEditorProps) {
   const {
     suggest_kw,
     show_media_modal,
-    toggleShowMediaModal
+    toggleShowMediaModal,
   } = React.useContext(AppCtxt);
 
   const [editorRef, setEditorRef] = React.useState(React.createRef<any>());
   const [showEditorModal, setShowEditorModal] = React.useState(false);
   const [imageData, setImageData] = React.useState({
-    src: "",
-    alt: "",
-    caption: ""
+    src: '',
+    alt: '',
+    caption: '',
   });
 
   React.useEffect(() => {
@@ -72,7 +71,7 @@ export function CustomEditor(props: CustomEditorProps) {
       const entityKey = character.getEntity();
       return (
         entityKey !== null &&
-        contentState.getEntity(entityKey).getType() === "LINK"
+        contentState.getEntity(entityKey).getType() === 'LINK'
       );
     }, callback);
   }
@@ -80,8 +79,8 @@ export function CustomEditor(props: CustomEditorProps) {
   const decorator = new CompositeDecorator([
     {
       strategy: findLinkEntities,
-      component: LinkComponent
-    }
+      component: LinkComponent,
+    },
   ]);
 
   let initState: any = null;
@@ -119,7 +118,7 @@ export function CustomEditor(props: CustomEditorProps) {
     );
 
     setEditorState(
-      EditorState.push(editorState, newState, "insert-characters")
+      EditorState.push(editorState, newState, 'insert-characters')
     );
     await setTimeout(() => {}, 100);
 
@@ -138,7 +137,7 @@ export function CustomEditor(props: CustomEditorProps) {
           anchorKey: blockKey,
           anchorOffset: 0,
           focusKey: blockKey,
-          focusOffset: 0
+          focusOffset: 0,
         })
       )
     );
@@ -146,42 +145,40 @@ export function CustomEditor(props: CustomEditorProps) {
 
   // and now it's only working when value change ! so string not changed
   React.useEffect(() => {
-    console.log("suggest_kw become", suggest_kw);
+    console.log('suggest_kw become', suggest_kw);
     if (suggest_kw) {
       replaceText(suggest_kw.keyword);
     }
   }, [suggest_kw]);
 
-
-
   const handleKey = (command: any) => {
     let selection = editorState.getSelection();
     console.log(command);
-    if (command === "bold") {
-      setEditorState(RichUtils.toggleInlineStyle(editorState, "BOLD"));
-      return "handled";
+    if (command === 'bold') {
+      setEditorState(RichUtils.toggleInlineStyle(editorState, 'BOLD'));
+      return 'handled';
     }
 
-    if (command === "code") {
-      setEditorState(RichUtils.toggleBlockType(editorState, "code"));
-      return "handled";
+    if (command === 'code') {
+      setEditorState(RichUtils.toggleBlockType(editorState, 'code'));
+      return 'handled';
     }
 
-    if (command === "header-one") {
-      setEditorState(RichUtils.toggleBlockType(editorState, "header-one"));
-      return "handled";
+    if (command === 'header-one') {
+      setEditorState(RichUtils.toggleBlockType(editorState, 'header-one'));
+      return 'handled';
     }
 
-    if (command === "header-two") {
-      setEditorState(RichUtils.toggleBlockType(editorState, "header-two"));
-      return "handled";
+    if (command === 'header-two') {
+      setEditorState(RichUtils.toggleBlockType(editorState, 'header-two'));
+      return 'handled';
     }
 
     if (command === KEY_COMMANDS.CTRL_L) {
       setEditorState(
-        RichUtils.toggleBlockType(editorState, "unordered-list-item")
+        RichUtils.toggleBlockType(editorState, 'unordered-list-item')
       );
-      return "handled";
+      return 'handled';
     }
 
     if (
@@ -192,16 +189,16 @@ export function CustomEditor(props: CustomEditorProps) {
       let newBlocksArr = moveBlock(
         editorState.getCurrentContent().getBlockMap(),
         blockKey,
-        command === KEY_COMMANDS.CTRL_PAGEUP ? "UP" : "DOWN"
+        command === KEY_COMMANDS.CTRL_PAGEUP ? 'UP' : 'DOWN'
       );
       const newEditorState = EditorState.push(
         editorState,
         ContentState.createFromBlockArray(newBlocksArr),
-        "change-block-data"
+        'change-block-data'
       );
 
       editorFocus(blockKey, newEditorState);
-      return "handled";
+      return 'handled';
     }
 
     // Delete current Block
@@ -216,13 +213,13 @@ export function CustomEditor(props: CustomEditorProps) {
           editorState,
           // @ts-ignore
           ContentState.createFromBlockArray(newBlockMap.toArray()),
-          "insert-fragment"
+          'insert-fragment'
         )
       );
-      return "handled";
+      return 'handled';
     }
 
-    if (command === "reset-style") {
+    if (command === 'reset-style') {
       const newContentState = RichUtils.tryToRemoveBlockStyle(editorState);
 
       if (newContentState) {
@@ -230,12 +227,12 @@ export function CustomEditor(props: CustomEditorProps) {
         let newEditorState = EditorState.push(
           editorState,
           newContentState,
-          "change-block-type"
+          'change-block-type'
         );
 
         setEditorState(newEditorState);
       }
-      return "handled";
+      return 'handled';
     }
 
     if (command === KEY_COMMANDS.CTRL_N) {
@@ -243,7 +240,7 @@ export function CustomEditor(props: CustomEditorProps) {
       if (editMode === EDIT_MODES.BLOCK) {
         //Modifier.removeInlineStyle()
         const blockKey = editorState.getSelection().getAnchorKey();
-        console.log("old blockKey", blockKey);
+        console.log('old blockKey', blockKey);
         const currentBlock = editorState
           .getCurrentContent()
           .getBlockForKey(blockKey);
@@ -257,19 +254,19 @@ export function CustomEditor(props: CustomEditorProps) {
             if (key === blockKey) {
               return new ContentBlock({
                 key: newkey,
-                type: "unstyled",
-                text: blockText
+                type: 'unstyled',
+                text: blockText,
               });
             }
             return block;
           });
-        console.log("newkey blockKey", newkey);
+        console.log('newkey blockKey', newkey);
         //console.log("newBlockMap.toArray()", newBlockMap.toArray());
         let newEditorState = EditorState.push(
           editorState,
           // @ts-ignore
           ContentState.createFromBlockArray(newBlockMap.toArray()),
-          "insert-fragment"
+          'insert-fragment'
         );
         // set new state and force selection to new key block
         setEditorState(
@@ -279,7 +276,7 @@ export function CustomEditor(props: CustomEditorProps) {
               anchorKey: newkey,
               anchorOffset: 0,
               focusKey: newkey,
-              focusOffset: 0
+              focusOffset: 0,
             })
           )
         );
@@ -336,25 +333,25 @@ export function CustomEditor(props: CustomEditorProps) {
         );
         */
       }
-      return "handled";
+      return 'handled';
     }
 
     if (command === KEY_COMMANDS.ALT_B) {
       if (editMode === EDIT_MODES.BLOCK) setEditMode(EDIT_MODES.DEFAULT);
       else setEditMode(EDIT_MODES.BLOCK);
-      return "handled";
+      return 'handled';
     }
 
-    if (command === "ctrl+s") {
+    if (command === 'ctrl+s') {
       navigator.clipboard.readText().then(clipText => {
         const contentState = editorState.getCurrentContent();
         const contentStateWithEntity = contentState.createEntity(
-          "LINK",
-          "MUTABLE",
+          'LINK',
+          'MUTABLE',
           { url: clipText }
         );
 
-        console.log("getSelectionEntity", getSelectionEntity(editorState));
+        console.log('getSelectionEntity', getSelectionEntity(editorState));
 
         if (getSelectionEntity(editorState)) {
           console.log(Entity.get(getSelectionEntity(editorState)));
@@ -364,27 +361,27 @@ export function CustomEditor(props: CustomEditorProps) {
         const newEditorState = EditorState.push(
           editorState,
           contentStateWithEntity,
-          "apply-entity"
+          'apply-entity'
         );
         setEditorState(
           RichUtils.toggleLink(newEditorState, selection, entityKey)
         );
 
-        console.log("selection", selection);
-        console.log("! selection isCollapsed", !selection.isCollapsed());
+        console.log('selection', selection);
+        console.log('! selection isCollapsed', !selection.isCollapsed());
       });
-      return "handled";
+      return 'handled';
     }
     console.log(`${command} not-handled`);
-    return "not-handled";
+    return 'not-handled';
   };
 
   function myBlockStyleFn(contentBlock: ContentBlock) {
     const blockKey = editorState.getSelection().getAnchorKey();
-    if(contentBlock.getType() === 'atomic') return "atomic-block";
+    if (contentBlock.getType() === 'atomic') return 'atomic-block';
 
-    if (blockKey === contentBlock.getKey()) return "every-block current-block";
-    else return "every-block";
+    if (blockKey === contentBlock.getKey()) return 'every-block current-block';
+    else return 'every-block';
   }
 
   return (
@@ -404,34 +401,34 @@ export function CustomEditor(props: CustomEditorProps) {
                 {
                   src: imageData.src,
                   alt: imageData.alt,
-                  caption: imageData.caption
+                  caption: imageData.caption,
                 }
               );
               const newEditorState = EditorState.set(editorState, {
-                currentContent: newContentState
+                currentContent: newContentState,
               });
               setEditorState(newEditorState);
             } else {
               // adding image block
               const contentStateWithEntity = contentState.createEntity(
-                "IMAGE",
-                "IMMUTABLE",
+                'IMAGE',
+                'IMMUTABLE',
                 {
                   src: imageData.src,
-                  alt: imageData.alt ? imageData.alt : "",
-                  caption: imageData.caption ? imageData.caption : ""
+                  alt: imageData.alt ? imageData.alt : '',
+                  caption: imageData.caption ? imageData.caption : '',
                 }
               );
               const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
               const newEditorState = EditorState.set(editorState, {
-                currentContent: contentStateWithEntity
+                currentContent: contentStateWithEntity,
               });
               setEditorState(
                 // its important to use whitespace
                 AtomicBlockUtils.insertAtomicBlock(
                   newEditorState,
                   entityKey,
-                  " "
+                  ' '
                 )
               );
             }
@@ -453,10 +450,10 @@ export function CustomEditor(props: CustomEditorProps) {
             .getBlockForKey(blockKey);
           if (
             e.keyCode === 8 &&
-            currentBlock.getType() !== "unstyled" &&
+            currentBlock.getType() !== 'unstyled' &&
             currentBlock.getText().length === 0
           ) {
-            return "reset-style";
+            return 'reset-style';
           }
           return myKeyBindingFn(e);
         }}
@@ -467,7 +464,7 @@ export function CustomEditor(props: CustomEditorProps) {
       <img
         src={linkSvg}
         alt=""
-        style={{ width: "2em" }}
+        style={{ width: '2em' }}
         onClick={() => {
           toggleShowMediaModal({ show: true });
         }}
@@ -482,33 +479,33 @@ export function CustomEditor(props: CustomEditorProps) {
       <span
         className="bold text-dark"
         onClick={() => {
-          editorFocus("ftqfh", editorState);
+          editorFocus('ftqfh', editorState);
         }}
       >
         Focus
       </span>
-      <span onClick={() => {
+      <span
+        onClick={() => {
           const contentState = editorState.getCurrentContent();
           const contentStateWithEntity = contentState.createEntity(
-            "Quote",
-            "MUTABLE",
-            { custom: "quote" }
+            'Quote',
+            'IMMUTABLE',
+            { quote: 'تجربة مبدئية' }
           );
-      
+
           const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
           const newEditorState = EditorState.set(editorState, {
-            currentContent: contentStateWithEntity
+            currentContent: contentStateWithEntity,
           });
           //
           setEditorState(
             // its important to use whitespace
-            AtomicBlockUtils.insertAtomicBlock(
-              newEditorState,
-              entityKey,
-              " "
-            )
+            AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, ' ')
           );
-        }}> Quote Block </span>
+        }}
+      >
+        *Quote Block*
+      </span>
     </div>
   );
 }

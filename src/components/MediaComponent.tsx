@@ -1,6 +1,6 @@
-import React from "react";
-import { Entity } from "draft-js";
-import { AppCtxt } from "../ctx";
+import React from 'react';
+import { Entity } from 'draft-js';
+import { AppCtxt } from '../ctx';
 
 export default function MediaComponent(props: any) {
   const { toggleShowMediaModal } = React.useContext(AppCtxt);
@@ -22,8 +22,8 @@ export default function MediaComponent(props: any) {
                 src: src,
                 alt: alt,
                 caption: caption,
-                entity_key: entityMapKey
-              }
+                entity_key: entityMapKey,
+              },
             });
           }}
         />

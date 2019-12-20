@@ -1,8 +1,12 @@
-import React from 'react'
+import React from 'react';
+import { EditorBlock } from 'draft-js';
 
 export default function SimpleQuote(props: any) {
   const { block } = props;
+  console.log(props);
   return (
-  <h1 style={{direction: 'rtl'}}> {block.getText()}</h1>
-  )
+    <div style={{ border: '1px solid #f00' }} contentEditable={false}>
+      <span> {block.getText()}</span>
+    </div>
+  );
 }
