@@ -120,10 +120,15 @@ export function moveBlock(
 
 export function myBlockRenderer(contentBlock: ContentBlock) {
   if (contentBlock.getType() === 'atomic') {
-    if (contentBlock.getEntityAt(0))
+    if (contentBlock.getEntityAt(0)) {
+      console.log(contentBlock.getData().contains('quote'));
+      if (contentBlock.getData().contains('quote'))
+        return { component: SimpleQuote };
+
       return {
         component: MediaComponent,
       };
+    }
     // else it will be quote for now
     else
       return {

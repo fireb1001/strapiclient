@@ -2,11 +2,17 @@ import React from 'react';
 import { EditorBlock } from 'draft-js';
 
 export default function SimpleQuote(props: any) {
-  const { block } = props;
-  console.log(props);
+  const { block, contentState } = props;
+  const entityMapKey = block.getEntityAt(0);
+  const entity = contentState.getEntity(entityMapKey);
+  const { quote } = entity.getData();
+  console.log(entity.getData());
   return (
-    <div style={{ border: '1px solid #f00' }} contentEditable={false}>
-      <span> {block.getText()}</span>
+    <div>
+      <span style={{ border: '1px solid #f00' }} contentEditable={false}>
+        {' '}
+        {quote}
+      </span>
     </div>
   );
 }

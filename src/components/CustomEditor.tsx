@@ -101,11 +101,15 @@ export function CustomEditor(props: CustomEditorProps) {
 
   const [editorState, setEditorState] = React.useState(initState);
 
+  React.useEffect(() => {
+    if (editorState) console.log('1', editorState);
+  }, [editorState]);
+
   const [editMode, setEditMode] = React.useState<EDIT_MODES>(
     EDIT_MODES.DEFAULT
   );
 
-  const onChange = (editorState: EditorState) => {
+  const changeState = (editorState: EditorState) => {
     props.handleUpdateRaw(convertToRaw(editorState.getCurrentContent()));
     setEditorState(editorState);
   };
@@ -117,9 +121,7 @@ export function CustomEditor(props: CustomEditorProps) {
       newString
     );
 
-    setEditorState(
-      EditorState.push(editorState, newState, 'insert-characters')
-    );
+    changeState(EditorState.push(editorState, newState, 'insert-characters'));
     await setTimeout(() => {}, 100);
 
     // @ts-ignore
@@ -130,7 +132,7 @@ export function CustomEditor(props: CustomEditorProps) {
     console.log(blockKey);
 
     await setTimeout(() => {}, 500);
-    setEditorState(
+    changeState(
       EditorState.forceSelection(
         newEditorState,
         new SelectionState({
@@ -155,27 +157,27 @@ export function CustomEditor(props: CustomEditorProps) {
     let selection = editorState.getSelection();
     console.log(command);
     if (command === 'bold') {
-      setEditorState(RichUtils.toggleInlineStyle(editorState, 'BOLD'));
+      changeState(RichUtils.toggleInlineStyle(editorState, 'BOLD'));
       return 'handled';
     }
 
     if (command === 'code') {
-      setEditorState(RichUtils.toggleBlockType(editorState, 'code'));
+      changeState(RichUtils.toggleBlockType(editorState, 'code'));
       return 'handled';
     }
 
     if (command === 'header-one') {
-      setEditorState(RichUtils.toggleBlockType(editorState, 'header-one'));
+      changeState(RichUtils.toggleBlockType(editorState, 'header-one'));
       return 'handled';
     }
 
     if (command === 'header-two') {
-      setEditorState(RichUtils.toggleBlockType(editorState, 'header-two'));
+      changeState(RichUtils.toggleBlockType(editorState, 'header-two'));
       return 'handled';
     }
 
     if (command === KEY_COMMANDS.CTRL_L) {
-      setEditorState(
+      changeState(
         RichUtils.toggleBlockType(editorState, 'unordered-list-item')
       );
       return 'handled';
@@ -208,7 +210,7 @@ export function CustomEditor(props: CustomEditorProps) {
         .getCurrentContent()
         .getBlockMap()
         .filter((block: any) => block!.getKey() != blockKey);
-      setEditorState(
+      changeState(
         EditorState.push(
           editorState,
           // @ts-ignore
@@ -230,7 +232,7 @@ export function CustomEditor(props: CustomEditorProps) {
           'change-block-type'
         );
 
-        setEditorState(newEditorState);
+        changeState(newEditorState);
       }
       return 'handled';
     }
@@ -269,7 +271,7 @@ export function CustomEditor(props: CustomEditorProps) {
           'insert-fragment'
         );
         // set new state and force selection to new key block
-        setEditorState(
+        changeState(
           EditorState.forceSelection(
             newEditorState,
             new SelectionState({
@@ -296,7 +298,7 @@ export function CustomEditor(props: CustomEditorProps) {
         // remove block itself
         const blockMap = newState.getBlockMap().delete(blockKey);
         console.log("blockMap.toArray()", blockMap.toArray());
-        setEditorState(
+        changeState(
           EditorState.push(
             editorState,
             ContentState.createFromBlockArray(blockMap.toArray()),
@@ -313,7 +315,7 @@ export function CustomEditor(props: CustomEditorProps) {
           })
         );
 
-        setEditorState(
+        changeState(
           EditorState.push(
             editorState,
             ContentState.createFromBlockArray(newBlockMap.toArray()),
@@ -328,7 +330,7 @@ export function CustomEditor(props: CustomEditorProps) {
           text: blockText
         });
 
-        setEditorState(
+        changeState(
           EditorState.push(editorState, newState, "insert-characters")
         );
         */
@@ -363,9 +365,7 @@ export function CustomEditor(props: CustomEditorProps) {
           contentStateWithEntity,
           'apply-entity'
         );
-        setEditorState(
-          RichUtils.toggleLink(newEditorState, selection, entityKey)
-        );
+        changeState(RichUtils.toggleLink(newEditorState, selection, entityKey));
 
         console.log('selection', selection);
         console.log('! selection isCollapsed', !selection.isCollapsed());
@@ -407,7 +407,7 @@ export function CustomEditor(props: CustomEditorProps) {
               const newEditorState = EditorState.set(editorState, {
                 currentContent: newContentState,
               });
-              setEditorState(newEditorState);
+              changeState(newEditorState);
             } else {
               // adding image block
               const contentStateWithEntity = contentState.createEntity(
@@ -423,7 +423,7 @@ export function CustomEditor(props: CustomEditorProps) {
               const newEditorState = EditorState.set(editorState, {
                 currentContent: contentStateWithEntity,
               });
-              setEditorState(
+              changeState(
                 // its important to use whitespace
                 AtomicBlockUtils.insertAtomicBlock(
                   newEditorState,
@@ -439,7 +439,7 @@ export function CustomEditor(props: CustomEditorProps) {
       <Editor
         editorState={editorState}
         ref={setDomEditorRef}
-        onChange={onChange}
+        onChange={changeState}
         handleKeyCommand={handleKey}
         keyBindingFn={e => {
           // check if binding need editor state
@@ -479,13 +479,29 @@ export function CustomEditor(props: CustomEditorProps) {
       <span
         className="bold text-dark"
         onClick={() => {
-          editorFocus('ftqfh', editorState);
+          //editorFocus('4q6vg', editorState);
+
+          // Set Block Data manually // and it's working
+          let selection = SelectionState.createEmpty('7v3gr');
+          const { Map } = require('immutable');
+          const nextContentState = Modifier.setBlockData(
+            editorState.getCurrentContent(),
+            selection,
+            Map({ quote: 'quote' })
+          );
+          let lastState = EditorState.push(
+            editorState,
+            nextContentState,
+            'change-block-data'
+          );
+          changeState(lastState);
+          console.log(lastState.getCurrentContent().getBlocksAsArray());
         }}
       >
         Focus
       </span>
       <span
-        onClick={() => {
+        onClick={async () => {
           const contentState = editorState.getCurrentContent();
           const contentStateWithEntity = contentState.createEntity(
             'Quote',
@@ -497,11 +513,42 @@ export function CustomEditor(props: CustomEditorProps) {
           const newEditorState = EditorState.set(editorState, {
             currentContent: contentStateWithEntity,
           });
-          //
-          setEditorState(
-            // its important to use whitespace
-            AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, ' ')
+          console.log(newEditorState);
+
+          const newNewState = AtomicBlockUtils.insertAtomicBlock(
+            newEditorState,
+            entityKey,
+            ' '
           );
+          changeState(newNewState);
+          await setTimeout(() => {}, 100);
+          // fucken crazy
+          // Now Add Data to block
+          // get da fuken block key but take care of reactive bullshit
+
+          console.log('2', newNewState.getCurrentContent().getBlocksAsArray());
+          const newAtomicBlockKey = newNewState
+            .getCurrentContent()
+            .getBlockMap()
+            .find((b: any) => b.getEntityAt(0) === entityKey)
+            .getKey();
+          console.log('3', newAtomicBlockKey);
+
+          let selection = SelectionState.createEmpty(newAtomicBlockKey);
+          const { Map } = require('immutable');
+          const nextContentState = Modifier.setBlockData(
+            newNewState.getCurrentContent(),
+            selection,
+            Map({ quote: 'quote' })
+          );
+          let newNewNewState = EditorState.push(
+            newNewState,
+            nextContentState,
+            'change-block-data'
+          );
+          changeState(newNewNewState);
+          //console.log(newNewNewState.getCurrentContent().getBlocksAsArray());
+          /**/
         }}
       >
         *Quote Block*
