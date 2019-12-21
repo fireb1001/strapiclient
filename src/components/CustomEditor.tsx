@@ -27,7 +27,7 @@ import { Modal, Button } from 'react-bootstrap';
 import { AppCtxt } from '../ctx';
 import LinkComponent from './editors/LinkComponent';
 import MediaModal from './editors/MediaModal';
-
+import { Map } from 'immutable';
 interface CustomEditorProps {
   rawContent?: any;
   handleUpdateRaw: (state: any) => void;
@@ -100,10 +100,6 @@ export function CustomEditor(props: CustomEditorProps) {
   }
 
   const [editorState, setEditorState] = React.useState(initState);
-
-  React.useEffect(() => {
-    if (editorState) console.log('1', editorState);
-  }, [editorState]);
 
   const [editMode, setEditMode] = React.useState<EDIT_MODES>(
     EDIT_MODES.DEFAULT
@@ -470,35 +466,14 @@ export function CustomEditor(props: CustomEditorProps) {
         }}
       />
       <span
-        onClick={_ =>
-          console.log(convertToRaw(editorState.getCurrentContent()))
-        }
-      >
-        STATE
-      </span>
-      <span
         className="bold text-dark"
         onClick={() => {
+          // console.log(convertToRaw(editorState.getCurrentContent()))
           //editorFocus('4q6vg', editorState);
-
-          // Set Block Data manually // and it's working
-          let selection = SelectionState.createEmpty('7v3gr');
-          const { Map } = require('immutable');
-          const nextContentState = Modifier.setBlockData(
-            editorState.getCurrentContent(),
-            selection,
-            Map({ quote: 'quote' })
-          );
-          let lastState = EditorState.push(
-            editorState,
-            nextContentState,
-            'change-block-data'
-          );
-          changeState(lastState);
-          console.log(lastState.getCurrentContent().getBlocksAsArray());
         }}
       >
-        Focus
+        {' '}
+        Do somthing{' '}
       </span>
       <span
         onClick={async () => {
@@ -506,49 +481,39 @@ export function CustomEditor(props: CustomEditorProps) {
           const contentStateWithEntity = contentState.createEntity(
             'Quote',
             'IMMUTABLE',
-            { quote: 'تجربة مبدئية' }
+            { quote: 'تجربة جديدة' }
           );
 
           const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
           const newEditorState = EditorState.set(editorState, {
             currentContent: contentStateWithEntity,
           });
-          console.log(newEditorState);
 
           const newNewState = AtomicBlockUtils.insertAtomicBlock(
             newEditorState,
             entityKey,
             ' '
           );
-          changeState(newNewState);
-          await setTimeout(() => {}, 100);
-          // fucken crazy
           // Now Add Data to block
           // get da fuken block key but take care of reactive bullshit
-
           console.log('2', newNewState.getCurrentContent().getBlocksAsArray());
           const newAtomicBlockKey = newNewState
             .getCurrentContent()
             .getBlockMap()
             .find((b: any) => b.getEntityAt(0) === entityKey)
             .getKey();
-          console.log('3', newAtomicBlockKey);
 
           let selection = SelectionState.createEmpty(newAtomicBlockKey);
-          const { Map } = require('immutable');
+
           const nextContentState = Modifier.setBlockData(
             newNewState.getCurrentContent(),
             selection,
             Map({ quote: 'quote' })
           );
-          let newNewNewState = EditorState.push(
-            newNewState,
-            nextContentState,
-            'change-block-data'
+          // final editor state
+          changeState(
+            EditorState.push(newNewState, nextContentState, 'change-block-data')
           );
-          changeState(newNewNewState);
-          //console.log(newNewNewState.getCurrentContent().getBlocksAsArray());
-          /**/
         }}
       >
         *Quote Block*

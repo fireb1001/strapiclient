@@ -6,7 +6,6 @@ export default function SimpleQuote(props: any) {
   const entityMapKey = block.getEntityAt(0);
   const entity = contentState.getEntity(entityMapKey);
   const { quote } = entity.getData();
-  console.log(entity.getData());
   return (
     <div>
       <span style={{ border: '1px solid #f00' }} contentEditable={false}>
