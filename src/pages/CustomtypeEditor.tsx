@@ -1,31 +1,31 @@
-import React from "react";
-import { RouterProps, Customtype } from "../common/types";
-import CoverArea from "../components/CoverArea";
-import EdTextArea from "../components/EdTextArea";
-import { CustomEditor } from "../components/CustomEditor";
+import React from 'react';
+import { RouterProps, Customtype } from '../common/types';
+import CoverArea from '../components/CoverArea';
+import EdTextArea from '../components/EdTextArea';
+import { CustomEditor } from '../components/CustomEditor';
 // @ts-ignore
-import draftToMarkdown from "draftjs-to-markdown";
-import { customConvertMd } from "../common/editor-functions";
-import { InputGroup, FormControl } from "react-bootstrap";
+import draftToMarkdown from 'draftjs-to-markdown';
+import { customConvertMd } from '../common/editor-functions';
+import { InputGroup, FormControl } from 'react-bootstrap';
 
-import { useQuery, useMutation } from "@apollo/react-hooks";
-import ContentEditable from "react-contenteditable";
-import { readableTime } from "../common/functions";
-import { GET_CUSTOMTYPE, UPDATE_CUSTOMTYPE } from "../graphql/customtype";
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import ContentEditable from 'react-contenteditable';
+import { readableTime } from '../common/functions';
+import { GET_CUSTOMTYPE, UPDATE_CUSTOMTYPE } from '../graphql/customtype';
 
 type Props = RouterProps;
 
 export default function CustomtypeEditor({ match, history }: Props) {
   const { loading, data, error } = useQuery(GET_CUSTOMTYPE, {
-    variables: { id: match.params.id }
+    variables: { id: match.params.id },
   });
 
   const [updateCustomtype] = useMutation(UPDATE_CUSTOMTYPE);
-  const goBack = () => history.push("/customtypes");
+  const goBack = () => history.push('/customtypes');
   React.useEffect(() => {
-    window.addEventListener("goBackPressed", goBack);
+    window.addEventListener('goBackPressed', goBack);
     return () => {
-      window.removeEventListener("goBackPressed", goBack);
+      window.removeEventListener('goBackPressed', goBack);
     };
   });
   const [customtype, setCustomtype] = React.useState<Customtype | undefined>(
@@ -37,7 +37,7 @@ export default function CustomtypeEditor({ match, history }: Props) {
     if (customtype)
       setCustomtype({
         ...customtype,
-        extras: Object.assign(customtype.extras, input)
+        extras: Object.assign(customtype.extras, input),
       });
   };
 
@@ -76,7 +76,7 @@ export default function CustomtypeEditor({ match, history }: Props) {
                   src={
                     customtype.extras && customtype.extras.cover
                       ? customtype.extras.cover
-                      : ""
+                      : ''
                   }
                   onSetImage={(image: string) => {
                     setCustomtypeExtra({ cover: image });
@@ -85,11 +85,11 @@ export default function CustomtypeEditor({ match, history }: Props) {
               </div>
               <div className="col-6">
                 <EdTextArea
-                  text={customtype.description ? customtype.description : ""}
+                  text={customtype.description ? customtype.description : ''}
                   onSetText={(newText: string) => {
                     let trimmed = newText
-                      .replace(/&nbsp;/gi, "")
-                      .replace(/<br>/gi, "");
+                      .replace(/&nbsp;/gi, '')
+                      .replace(/<br>/gi, '');
                     setCustomtype({ ...customtype, description: trimmed });
                   }}
                 />
@@ -124,9 +124,9 @@ export default function CustomtypeEditor({ match, history }: Props) {
                       {},
                       customConvertMd,
                       {}
-                    )
-                  }
-                }
+                    ),
+                  },
+                },
               });
               history.goBack();
             }}

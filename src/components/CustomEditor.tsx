@@ -28,6 +28,7 @@ import { AppCtxt } from '../ctx';
 import LinkComponent from './editors/LinkComponent';
 import MediaModal from './editors/MediaModal';
 import { Map } from 'immutable';
+import DataModal from './editors/DataModal';
 interface CustomEditorProps {
   rawContent?: any;
   handleUpdateRaw: (state: any) => void;
@@ -48,6 +49,8 @@ export function CustomEditor(props: CustomEditorProps) {
 
   const [editorRef, setEditorRef] = React.useState(React.createRef<any>());
   const [showEditorModal, setShowEditorModal] = React.useState(false);
+  const [showDataModal, setShowDataModal] = React.useState(false);
+  const [modalPayload, setModalPayload] = React.useState(Map({}));
   const [imageData, setImageData] = React.useState({
     src: '',
     alt: '',
@@ -148,6 +151,10 @@ export function CustomEditor(props: CustomEditorProps) {
       replaceText(suggest_kw.keyword);
     }
   }, [suggest_kw]);
+
+  React.useEffect(() => {
+    //do nothing for now
+  }, [editorState]);
 
   const handleKey = (command: any) => {
     let selection = editorState.getSelection();
@@ -371,6 +378,20 @@ export function CustomEditor(props: CustomEditorProps) {
     console.log(`${command} not-handled`);
     return 'not-handled';
   };
+  const getEditorState = () => {
+    return editorState;
+  };
+
+  const toggDataModal = (flag: boolean, payload: any) => {
+    setShowDataModal(flag);
+    setModalPayload(payload);
+  };
+
+  const customBlockRenderer = myBlockRenderer(
+    getEditorState,
+    changeState,
+    toggDataModal
+  );
 
   function myBlockStyleFn(contentBlock: ContentBlock) {
     const blockKey = editorState.getSelection().getAnchorKey();
@@ -431,7 +452,27 @@ export function CustomEditor(props: CustomEditorProps) {
           }
         }}
       />
+      <DataModal
+        show={showDataModal}
+        payload={modalPayload as Map<any, any>}
+        onSave={(data: Map<any, any>) => {
+          // now modify block data
+          let dataObj = data.toJS();
+          let selection = SelectionState.createEmpty(dataObj.key);
 
+          const nextContentState = Modifier.setBlockData(
+            editorState.getCurrentContent(),
+            selection,
+            data
+          );
+
+          // Set Changes
+          changeState(
+            EditorState.push(editorState, nextContentState, 'change-block-data')
+          );
+        }}
+        onToggle={(flag: boolean) => setShowDataModal(flag)}
+      />
       <Editor
         editorState={editorState}
         ref={setDomEditorRef}
@@ -453,7 +494,7 @@ export function CustomEditor(props: CustomEditorProps) {
           }
           return myKeyBindingFn(e);
         }}
-        blockRendererFn={myBlockRenderer}
+        blockRendererFn={customBlockRenderer}
         blockStyleFn={myBlockStyleFn}
       />
       {editMode == EDIT_MODES.BLOCK && <span> -- BLOCK MODE --</span>}
@@ -481,7 +522,7 @@ export function CustomEditor(props: CustomEditorProps) {
           const contentStateWithEntity = contentState.createEntity(
             'Quote',
             'IMMUTABLE',
-            { quote: 'تجربة جديدة' }
+            { by: '' }
           );
 
           const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
@@ -496,7 +537,6 @@ export function CustomEditor(props: CustomEditorProps) {
           );
           // Now Add Data to block
           // get da fuken block key but take care of reactive bullshit
-          console.log('2', newNewState.getCurrentContent().getBlocksAsArray());
           const newAtomicBlockKey = newNewState
             .getCurrentContent()
             .getBlockMap()
@@ -508,7 +548,7 @@ export function CustomEditor(props: CustomEditorProps) {
           const nextContentState = Modifier.setBlockData(
             newNewState.getCurrentContent(),
             selection,
-            Map({ quote: 'quote' })
+            Map({ short: 'quote', textAs: 'quote', key: newAtomicBlockKey })
           );
           // final editor state
           changeState(
@@ -518,6 +558,47 @@ export function CustomEditor(props: CustomEditorProps) {
       >
         *Quote Block*
       </span>
+      <Button
+        onClick={async () => {
+          const contentState = editorState.getCurrentContent();
+          const blockMap = contentState.getBlockMap();
+          let newkey = genKey();
+          const newBlock = new ContentBlock({
+            key: newkey,
+            text: '',
+            type: 'unstyled',
+            data: Map({ typed: 'wirdo' }),
+          });
+          const newBlockMap = blockMap
+            .toSeq()
+            .concat([[newBlock.getKey(), newBlock]])
+            .toOrderedMap();
+
+          let newEditorState = EditorState.push(
+            editorState,
+            // @ts-ignore
+            ContentState.createFromBlockArray(newBlockMap.toArray()),
+            'insert-fragment'
+          );
+          changeState(newEditorState);
+          // set new state and force selection to new key block
+          /*
+          changeState(
+            EditorState.forceSelection(
+              newEditorState,
+              new SelectionState({
+                anchorKey: newkey,
+                anchorOffset: 0,
+                focusKey: newkey,
+                focusOffset: 0,
+              })
+            )
+          );
+          */
+        }}
+      >
+        *Typed Block*
+      </Button>
     </div>
   );
 }

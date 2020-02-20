@@ -6,6 +6,7 @@ import {
 } from 'draft-js';
 import MediaComponent from '../components/MediaComponent';
 import SimpleQuote from '../components/editors/SimpleQuote';
+import TypedBlock from '../components/editors/TypedBlock';
 const { hasCommandModifier } = KeyBindingUtil;
 
 export const KEY_COMMANDS = {
@@ -20,13 +21,13 @@ export const KEY_COMMANDS = {
 
 export function customConvertMd(entity: any, text: string) {
   // Todo check when lose entity
+  /*
   if (text) {
-    console.log(entity, text);
     return `@ ${text} @`;
   }
+  */
   if (entity.type === 'Quote') {
-    console.log('Quote', entity);
-    return `@ ${entity.data.quote} @`;
+    return ` by="${entity.data.by}" `;
   }
 
   if (entity.type === 'IMAGE') {
@@ -118,22 +119,56 @@ export function moveBlock(
   return blocksArr;
 }
 
-export function myBlockRenderer(contentBlock: ContentBlock) {
+export const myBlockRenderer = (
+  getEditorState: any,
+  changeState: any,
+  toggModal: any
+) => (contentBlock: ContentBlock) => {
+  // console.log(contentBlock.getType(), contentBlock.getData().toJS());
+  if (
+    contentBlock.getType() === 'unstyled' &&
+    contentBlock.getData().get('typed')
+  ) {
+    //console.log('typed block');
+    return {
+      component: TypedBlock,
+      props: {
+        getEditorState,
+        changeState,
+        toggModal,
+      },
+    };
+  }
   if (contentBlock.getType() === 'atomic') {
     if (contentBlock.getEntityAt(0)) {
-      console.log(contentBlock.getData().contains('quote'));
       if (contentBlock.getData().contains('quote'))
-        return { component: SimpleQuote };
+        return {
+          component: SimpleQuote,
+          props: {
+            getEditorState,
+            changeState,
+            toggModal,
+          },
+        };
 
       return {
         component: MediaComponent,
       };
     }
+    return null;
     // else it will be quote for now
-    else
+    /*
+    else {
+      console.log('getEditorState', getEditorState());
       return {
         component: SimpleQuote,
+        props: {
+          getEditorState,
+          onChange,
+        },
       };
+    }
+    */
   }
   return null;
-}
+};

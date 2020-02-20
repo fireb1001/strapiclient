@@ -1,15 +1,15 @@
-import React, { useContext, useState } from "react";
-import { useQuery, useMutation } from "@apollo/react-hooks";
-import { QUERY_INITS } from "../graphql";
-import { FormCheck } from "react-bootstrap";
-import AddSprovider from "../components/AddSprovider";
-import { AppCtxt } from "../ctx";
-import { readableTime } from "../common/functions";
-import { GET_SPROVIDERS, UPDATE_SPROVIDER } from "../graphql/sproviders";
-import { Link } from "react-router-dom";
-import DropdownSider from "../components/DropdownSider";
-import { DELETE_SPROVIDER } from "../graphql/sproviders";
-import { Sprovider } from "../common/types";
+import React, { useContext, useState } from 'react';
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import { QUERY_INITS } from '../graphql';
+import { FormCheck } from 'react-bootstrap';
+import AddSprovider from '../components/AddSprovider';
+import { AppCtxt } from '../ctx';
+import { readableTime } from '../common/functions';
+import { GET_SPROVIDERS, UPDATE_SPROVIDER } from '../graphql/sproviders';
+import { Link } from 'react-router-dom';
+import DropdownSider from '../components/DropdownSider';
+import { DELETE_SPROVIDER } from '../graphql/sproviders';
+import { Sprovider } from '../common/types';
 
 interface SingleProps {
   provider: Sprovider;
@@ -21,25 +21,25 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
   let ipcRenderer: any;
 
   if (window.process && window.process.versions.electron) {
-    ipcRenderer = window.require("electron").ipcRenderer;
+    ipcRenderer = window.require('electron').ipcRenderer;
   }
 
   const [deleteSprovider] = useMutation(DELETE_SPROVIDER, {
     refetchQueries: [
-      { query: GET_SPROVIDERS, variables: QUERY_INITS.getSproviders }
-    ]
+      { query: GET_SPROVIDERS, variables: QUERY_INITS.getSproviders },
+    ],
   });
 
   const [updateSprovider] = useMutation(UPDATE_SPROVIDER, {
     refetchQueries: [
-      { query: GET_SPROVIDERS, variables: QUERY_INITS.getSproviders }
-    ]
+      { query: GET_SPROVIDERS, variables: QUERY_INITS.getSproviders },
+    ],
   });
 
   return (
     <>
       <div className="card m-2 p-3 pr-5">
-        <div className="row" style={{ direction: "rtl", textAlign: "right" }}>
+        <div className="row" style={{ direction: 'rtl', textAlign: 'right' }}>
           <div className="col-2">
             {/* provider.mediaitems.length > 0 &&
               provider.mediaitems.map((item: any) => (
@@ -53,12 +53,13 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
                   />
                 </div>
               )) */}
+            {provider.city}
             {provider.extras && provider.extras.cover && (
               <img
                 className="card-img3"
                 src={provider.extras.cover}
                 alt="Card image cap"
-                style={{ maxWidth: "100%" }}
+                style={{ maxWidth: '100%' }}
               />
             )}
           </div>
@@ -69,8 +70,8 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
             <i
               className="text-primary fab fa-facebook"
               onClick={async () => {
-                await ipcRenderer.invoke("open-external", {
-                  url: "https://facebook.com/" + provider.extras.facebookPage
+                await ipcRenderer.invoke('open-external', {
+                  url: 'https://facebook.com/' + provider.extras.facebookPage,
                 });
               }}
             />
@@ -88,29 +89,29 @@ const SingleProvider: React.FC<SingleProps> = ({ provider }: SingleProps) => {
           </div>
           <DropdownSider
             actionClicked={async (action: string) => {
-              if (action === "toggArchive") {
+              if (action === 'toggArchive') {
                 if (provider.published) {
                   updateSprovider({
-                    variables: { id: provider.id, data: { published: false } }
+                    variables: { id: provider.id, data: { published: false } },
                   });
                 } else if (!provider.published) {
                   deleteSprovider({ variables: { id: provider.id } });
                 }
-              } else if (action === "publish") {
+              } else if (action === 'publish') {
                 updateSprovider({
-                  variables: { id: provider.id, data: { published: true } }
+                  variables: { id: provider.id, data: { published: true } },
                 });
               }
             }}
             dropItems={[
               {
-                action: "toggArchive",
-                label: provider.published ? "Un Publish " : " Delete "
+                action: 'toggArchive',
+                label: provider.published ? 'Un Publish ' : ' Delete ',
               },
               {
-                action: "publish",
-                label: "Publish "
-              }
+                action: 'publish',
+                label: 'Publish ',
+              },
             ]}
           />
         </div>
@@ -123,7 +124,7 @@ export default function SProviders() {
   const context = useContext(AppCtxt);
 
   const { loading, error, data, refetch } = useQuery(GET_SPROVIDERS, {
-    variables: QUERY_INITS.getSproviders
+    variables: QUERY_INITS.getSproviders,
   });
   /*
   const [updateMedia, { error: mutationError }] = useMutation(
@@ -142,7 +143,7 @@ export default function SProviders() {
   });
 
   const [localState, setLocalState] = useState({
-    show_archived: false
+    show_archived: false,
   });
 
   if (loading) return <p>Loading...</p>;

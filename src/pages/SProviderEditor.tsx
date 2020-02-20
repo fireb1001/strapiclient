@@ -1,30 +1,30 @@
-import React from "react";
-import { RouterProps, Sprovider } from "../common/types";
-import { GET_SPROVIDER, UPDATE_SPROVIDER } from "./../graphql/sproviders";
-import { useQuery, useMutation } from "@apollo/react-hooks";
-import ContentEditable from "react-contenteditable";
-import { readableTime } from "../common/functions";
-import CoverArea from "../components/CoverArea";
-import EdTextArea from "../components/EdTextArea";
-import { CustomEditor } from "../components/CustomEditor";
+import React from 'react';
+import { RouterProps, Sprovider } from '../common/types';
+import { GET_SPROVIDER, UPDATE_SPROVIDER } from './../graphql/sproviders';
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import ContentEditable from 'react-contenteditable';
+import { readableTime } from '../common/functions';
+import CoverArea from '../components/CoverArea';
+import EdTextArea from '../components/EdTextArea';
+import { CustomEditor } from '../components/CustomEditor';
 // @ts-ignore
-import draftToMarkdown from "draftjs-to-markdown";
-import { customConvertMd } from "../common/editor-functions";
-import { InputGroup, FormControl } from "react-bootstrap";
+import draftToMarkdown from 'draftjs-to-markdown';
+import { customConvertMd } from '../common/editor-functions';
+import { InputGroup, FormControl } from 'react-bootstrap';
 
 type Props = RouterProps;
 
 export default function SProviderEditor({ match, history }: Props) {
   const { loading, data, error } = useQuery(GET_SPROVIDER, {
-    variables: { id: match.params.id }
+    variables: { id: match.params.id },
   });
 
   const [updateSprovider] = useMutation(UPDATE_SPROVIDER);
-  const goBack = () => history.push("/sproviders");
+  const goBack = () => history.push('/sproviders');
   React.useEffect(() => {
-    window.addEventListener("goBackPressed", goBack);
+    window.addEventListener('goBackPressed', goBack);
     return () => {
-      window.removeEventListener("goBackPressed", goBack);
+      window.removeEventListener('goBackPressed', goBack);
     };
   });
   const [sprovider, setSprovider] = React.useState<Sprovider | undefined>(
@@ -36,7 +36,7 @@ export default function SProviderEditor({ match, history }: Props) {
     if (sprovider)
       setSprovider({
         ...sprovider,
-        extras: Object.assign(sprovider.extras, input)
+        extras: Object.assign(sprovider.extras, input),
       });
   };
 
@@ -70,13 +70,23 @@ export default function SProviderEditor({ match, history }: Props) {
               {readableTime(sprovider.createdAt)}
             </span>
             <hr />
+            <div>
+              City:
+              <ContentEditable
+                html={sprovider.city ? sprovider.city : ' -- '}
+                onChange={e => {
+                  setSprovider({ ...sprovider, city: e.target.value });
+                }}
+              />
+            </div>
+            <hr />
             <div className="row">
               <div className="col-6">
                 <CoverArea
                   src={
                     sprovider.extras && sprovider.extras.cover
                       ? sprovider.extras.cover
-                      : ""
+                      : ''
                   }
                   onSetImage={(image: string) => {
                     setSproviderExtra({ cover: image });
@@ -85,11 +95,11 @@ export default function SProviderEditor({ match, history }: Props) {
               </div>
               <div className="col-6">
                 <EdTextArea
-                  text={sprovider.description ? sprovider.description : ""}
+                  text={sprovider.description ? sprovider.description : ''}
                   onSetText={(newText: string) => {
                     let trimmed = newText
-                      .replace(/&nbsp;/gi, "")
-                      .replace(/<br>/gi, "");
+                      .replace(/&nbsp;/gi, '')
+                      .replace(/<br>/gi, '');
                     setSprovider({ ...sprovider, description: trimmed });
                   }}
                 />
@@ -97,7 +107,7 @@ export default function SProviderEditor({ match, history }: Props) {
             </div>
             <hr />
             <label htmlFor="basic-url">Your vanity URL</label>
-            <InputGroup className="mb-3" style={{ direction: "ltr" }}>
+            <InputGroup className="mb-3" style={{ direction: 'ltr' }}>
               <InputGroup.Prepend>
                 <InputGroup.Text id="basic-addon3">
                   https://facebook.com/
@@ -105,10 +115,10 @@ export default function SProviderEditor({ match, history }: Props) {
               </InputGroup.Prepend>
               <FormControl
                 id="basic-url"
-                value={sprovider.extras.facebookPage || ""}
+                value={sprovider.extras.facebookPage || ''}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   setSproviderExtra({
-                    facebookPage: e.target.value
+                    facebookPage: e.target.value,
                   });
                 }}
               />
@@ -133,6 +143,7 @@ export default function SProviderEditor({ match, history }: Props) {
                   data: {
                     name: sprovider.name,
                     extras: sprovider.extras,
+                    city: sprovider.city,
                     description: sprovider.description,
                     rawcontent: rawEditorState,
                     content: draftToMarkdown(
@@ -140,9 +151,9 @@ export default function SProviderEditor({ match, history }: Props) {
                       {},
                       customConvertMd,
                       {}
-                    )
-                  }
-                }
+                    ),
+                  },
+                },
               });
               history.goBack();
             }}

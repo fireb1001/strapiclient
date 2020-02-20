@@ -1,4 +1,5 @@
-import { History } from "history";
+import { History } from 'history';
+import { ContentBlock, ContentState, EditorProps } from 'draft-js';
 
 export type Article = {
   id: string;
@@ -20,6 +21,7 @@ export declare interface RouterProps {
 export type Sprovider = {
   id: string;
   name: string;
+  city: string;
   published: boolean;
   description: string;
   extras: any;
@@ -35,7 +37,7 @@ export type Customtype = {
   id: string;
   title: string;
   content: string;
-  type: "service" | "product" | "locatio";
+  type: 'service' | 'product' | 'locatio';
   extras: any;
   description: string;
   rawcontent: string;
@@ -67,7 +69,7 @@ export type Site = {
 export type MarkdownData = {
   title: string;
   cover: string;
-  author: "مؤمن";
+  author: 'مؤمن';
   createdAt: Date;
   type?: string;
   layout?: string;
@@ -78,4 +80,10 @@ export type MarkdownData = {
 export declare interface EditorProps {
   handleKeyCommand: any;
   keyBindingFn: any;
+}
+
+export declare interface CustomRenderProps {
+  block: ContentBlock;
+  contentState: ContentState;
+  blockProps: any;
 }

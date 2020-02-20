@@ -10,6 +10,7 @@ const FULL_QUERY = `{
   updatedAt
   content
   rawcontent
+  city
   sites {
     id
     name

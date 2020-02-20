@@ -1,13 +1,13 @@
-const electron = require("electron");
+const electron = require('electron');
 const ipcMain = electron.ipcMain;
 const app = electron.app;
 const shell = electron.shell;
 const BrowserWindow = electron.BrowserWindow;
 const BrowserView = electron.BrowserView;
 const Tray = electron.Tray;
-const path = require("path");
-const isDev = require("electron-is-dev");
-const fse = require("fs-extra");
+const path = require('path');
+const isDev = require('electron-is-dev');
+const fse = require('fs-extra');
 
 /**@type {electron.BrowserWindow} */
 let mainWindow;
@@ -20,28 +20,28 @@ let tray;
 let view;
 
 global.sharedElectronObj = {
-  params: {}
+  params: {},
 };
 function createWindow() {
   mainWindow = new BrowserWindow({
     //frame: true,
     webPreferences: {
       webviewTag: true,
-      nodeIntegration: true
-    }
+      nodeIntegration: true,
+    },
   });
   mainWindow.loadURL(
     isDev
-      ? "http://localhost:3000"
-      : `file://${path.join(__dirname, "../build/index.html")}`
+      ? 'http://localhost:3000'
+      : `file://${path.join(__dirname, '../build/index.html')}`
   );
   mainWindow.maximize();
 
   if (isDev) mainWindow.webContents.openDevTools();
 
-  mainWindow.on("closed", () => (mainWindow = null));
-  tray = new Tray(path.join(__dirname, "./logo192.png"));
-  tray.on("click", () => {
+  mainWindow.on('closed', () => (mainWindow = null));
+  tray = new Tray(path.join(__dirname, './logo192.png'));
+  tray.on('click', () => {
     if (mainWindow.isVisible()) {
       mainWindow.hide();
     } else {
@@ -53,10 +53,10 @@ function createWindow() {
     width: 400,
     height: 400,
     parent: mainWindow,
-    show: false
+    show: false,
   });
-  image.loadURL("https://www.facebook.com/Ahmedtx22/");
-  image.on("close", e => {
+  image.loadURL('https://www.facebook.com/Ahmedtx22/');
+  image.on('close', e => {
     e.preventDefault();
     image.hide();
   });
@@ -64,31 +64,31 @@ function createWindow() {
     width: 600,
     height: 800,
     parent: mainWindow,
-    show: false
+    show: false,
   });
-  kwSearch.on("close", e => {
+  kwSearch.on('close', e => {
     e.preventDefault();
     kwSearch.hide();
   });
 
-  const menu = require("./contextmenu")(mainWindow);
+  const menu = require('./contextmenu')(mainWindow);
 
-  image.webContents.on("context-menu", function(event, params) {
+  image.webContents.on('context-menu', function(event, params) {
     menu.popup(image, params.x, params.y);
     image.webContents.executeJavaScript(
       `console.log(${JSON.stringify(params)})`
     );
-    console.log("event", event);
-    console.log("params", params);
+    console.log('event', event);
+    console.log('params', params);
     global.sharedElectronObj = { ...global.sharedElectronObj, params };
   });
 
-  kwSearch.webContents.on("context-menu", function(event, params) {
+  kwSearch.webContents.on('context-menu', function(event, params) {
     menu.popup(kwSearch, params.x, params.y);
     kwSearch.webContents.executeJavaScript(
       `console.log(${JSON.stringify(params)})`
     );
-    console.log("params", params);
+    console.log('params', params);
     global.sharedElectronObj = { ...global.sharedElectronObj, params };
   });
 
@@ -97,31 +97,31 @@ function createWindow() {
 
   view = new BrowserView();
   view.setBounds({ x: 30, y: 30, width: 400, height: 500 });
-  view.webContents.loadURL("https://m.facebook.com");
+  view.webContents.loadURL('https://m.facebook.com');
   mainWindow.setBrowserView(view);
 
-  view.webContents.on("context-menu", function(event, params) {
+  view.webContents.on('context-menu', function(event, params) {
     menu.popup(view, params.x, params.y);
-    mainWindow.webContents.send("CLOG", params);
+    mainWindow.webContents.send('CLOG', params);
   });
 }
-app.on("ready", createWindow);
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+app.on('ready', createWindow);
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
     app.quit();
   }
 });
-app.on("activate", () => {
+app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
 });
 
-ipcMain.on("toggle-image", (event, arg) => {
+ipcMain.on('toggle-image', (event, arg) => {
   imageWindow.show();
 });
 
-ipcMain.on("toggle-browserview", (event, arg) => {
+ipcMain.on('toggle-browserview', (event, arg) => {
   let hasBrowserView = mainWindow.getBrowserView();
   if (hasBrowserView) {
     mainWindow.removeBrowserView(hasBrowserView);
@@ -130,41 +130,41 @@ ipcMain.on("toggle-browserview", (event, arg) => {
   }
 });
 
-ipcMain.on("open-kw-search", (event, data) => {
-  let keyword = data.keyword ? data.keyword.replace(" ", "+") : "";
+ipcMain.on('open-kw-search', (event, data) => {
+  let keyword = data.keyword ? data.keyword.replace(' ', '+') : '';
   kwSearchWindow.loadURL(`${data.url}${keyword}`);
   kwSearchWindow.show();
 });
 
-ipcMain.handle("open-external", async (event, data) => {
+ipcMain.handle('open-external', async (event, data) => {
   if (data && data.q)
     shell.openExternal(`https://www.google.com/search?q=${data.q}`);
   else if (data && data.url) shell.openExternal(data.url);
 });
 
-ipcMain.handle("write-files", async (event, data) => {
-  console.log("write-files", data.path);
-  console.log("data.settings", JSON.stringify(data.settings, null, 2));
+ipcMain.handle('write-files', async (event, data) => {
+  console.log('write-files', data.path);
+  console.log('data.settings', JSON.stringify(data.settings, null, 2));
   delete data.settings.devUse;
 
   // TODO dynamicly await promise all
   if (fse.existsSync(`${data.path}\\content\\post`)) {
     let done = await fse.emptyDir(`${data.path}\\content\\post`);
-    console.log("remove content post done " + done);
+    console.log('remove content post done ' + done);
   } else {
     await fse.mkdir(`${data.path}\\content\\post`);
   }
 
   if (fse.existsSync(`${data.path}\\content\\sprovider`)) {
     let done = await fse.emptyDir(`${data.path}\\content\\sprovider`);
-    console.log("remove content sprovider done " + done);
+    console.log('remove content sprovider done ' + done);
   } else {
     await fse.mkdir(`${data.path}\\content\\sprovider`);
   }
 
   if (fse.existsSync(`${data.path}\\content\\service`)) {
     let done = await fse.emptyDir(`${data.path}\\content\\service`);
-    console.log("remove content service done " + done);
+    console.log('remove content service done ' + done);
   } else {
     await fse.mkdir(`${data.path}\\content\\service`);
   }
@@ -177,6 +177,7 @@ ipcMain.handle("write-files", async (event, data) => {
 
   await Promise.all(
     data.posts.map(async post => {
+      // first make post title safe to be a file
       fse.writeFileSync(
         `${data.path}\\content\\${post.type}\\${post.title}.md`,
         post.body

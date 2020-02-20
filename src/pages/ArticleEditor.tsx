@@ -9,7 +9,7 @@ import { CustomEditor } from '../components/CustomEditor';
 import SuggestKeywords from '../components/SuggestKeywords';
 import { AppCtxt } from '../ctx';
 // @ts-ignore
-import draftToMarkdown from 'draftjs-to-markdown';
+import draftToMarkdown from 'draftjs-to-markdown/lib/draftjs-to-markdown';
 import CoverArea from '../components/CoverArea';
 import EdTextArea from '../components/EdTextArea';
 import { customConvertMd } from '../common/editor-functions';
