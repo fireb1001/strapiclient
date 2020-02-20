@@ -41,13 +41,19 @@ export function customConvertMd(entity: any, text: string) {
 export function myKeyBindingFn(e: any): string {
   let AltCrtlPressed =
     e.getModifierState('Alt') && e.getModifierState('Control');
-
+  /*
   if (e.key === '1' && AltCrtlPressed) {
     return 'select-one';
   }
+  */
   if (e.keyCode === 97 && hasCommandModifier(e)) {
     return 'header-one';
   }
+
+  if (e.keyCode === 97 && AltCrtlPressed) {
+    return 'header-one';
+  }
+
   if (e.keyCode === 98 && hasCommandModifier(e)) {
     return 'header-two';
   }

@@ -1,5 +1,5 @@
 import { History } from 'history';
-import { ContentBlock, ContentState, EditorProps } from 'draft-js';
+import { ContentBlock, ContentState } from 'draft-js';
 
 export type Article = {
   id: string;
@@ -46,7 +46,7 @@ export type Customtype = {
   published: boolean;
 };
 
-export type keyword = {
+export type Keyword = {
   id: string;
   keyword: string;
   volume: number;
@@ -60,7 +60,7 @@ export type DropItem = {
 export type Site = {
   id: string;
   name: string;
-  keywords: [keyword];
+  keywords: [Keyword];
   draft_description: JSON;
   settings: any;
   handle: string;

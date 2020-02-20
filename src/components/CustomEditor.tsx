@@ -23,7 +23,7 @@ import {
 // @ts-ignore
 import { getSelectionEntity } from 'draftjs-utils';
 import linkSvg from '../common/svg/link.svg';
-import { Modal, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { AppCtxt } from '../ctx';
 import LinkComponent from './editors/LinkComponent';
 import MediaModal from './editors/MediaModal';
@@ -59,7 +59,7 @@ export function CustomEditor(props: CustomEditorProps) {
 
   React.useEffect(() => {
     setShowEditorModal(show_media_modal);
-  });
+  }, [show_media_modal]);
 
   const setDomEditorRef = (ref: any) => {
     setEditorRef(ref);
@@ -212,7 +212,7 @@ export function CustomEditor(props: CustomEditorProps) {
       let newBlockMap = editorState
         .getCurrentContent()
         .getBlockMap()
-        .filter((block: any) => block!.getKey() != blockKey);
+        .filter((block: any) => block!.getKey() !== blockKey);
       changeState(
         EditorState.push(
           editorState,
@@ -497,7 +497,7 @@ export function CustomEditor(props: CustomEditorProps) {
         blockRendererFn={customBlockRenderer}
         blockStyleFn={myBlockStyleFn}
       />
-      {editMode == EDIT_MODES.BLOCK && <span> -- BLOCK MODE --</span>}
+      {editMode === EDIT_MODES.BLOCK && <span> -- BLOCK MODE --</span>}
       <img
         src={linkSvg}
         alt=""

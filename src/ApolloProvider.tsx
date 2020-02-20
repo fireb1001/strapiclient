@@ -21,7 +21,7 @@ const httpLink = createHttpLink({
   // Graphcms.com Momen's Facebook Login
   // uri: "http://localhost:4000/"
   // uri: "http://localhost:1337/graphql"
-  uri: 'https://fireb1008-lsfb.localhost.run/graphql',
+  uri: 'https://8238bbf4.ngrok.io/graphql',
 });
 
 const client = new ApolloClient({
